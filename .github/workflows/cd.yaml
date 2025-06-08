@@ -47,6 +47,7 @@ jobs:
     - name: Build Helm chart
       run: |
         ls -la
+        ls -la ./list-team
         helm lint ./list-team
         helm dependency update ./list-team
         helm package ./list-team --destination ./helm-packages
