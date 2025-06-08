@@ -3,36 +3,49 @@ name: CD - Deploy Helm Charts to GKE
 on:
   push:
     branches:
-      # - main
+      - main
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER_NAME }}
-  GKE_ZONE: ${{ secrets.GKE_CLUSTER_ZONE }}
-  HELM_CHART_PATH: ./helm-chart
+  PROJECT_ID: perceptive-day-462306-t3
+  GKE_CLUSTER: my-cluster-1
+  GKE_ZONE: us-central1-f
+  HELM_CHART_PATH: ./list-team
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    name: Build and Deploy Helm Charts to GKE
+  
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ env.GCP_PROJECT }}
+        service_account_key: gha-deployment-gke@perceptive-day-462306-t3.iam.gserviceaccount.com
+        export_default_credentials: true
 
-      - name: Configure kubectl
-        run: |
-          gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE" --project "$PROJECT_ID"
+    - name: Get GKE credentials
+      run: |
+        gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} --zone ${{ env.GKE_ZONE }}
 
-      - name: Set up Helm
-        uses: azure/setup-helm@v3
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
 
-      - name: Deploy Helm chart
-        run: |
-          helm upgrade --install my-release $HELM_CHART_PATH --namespace default --create-namespace
+    # - name: Create namespace if not exists
+    #   run: |
+    #     kubectl get namespace  || kubectl create namespace my-namespace
+
+    - name: Build Helm chart
+      run: |
+        helm lint ./helm/list-team
+        helm dependency update ./helm/list-team
+        helm package ./helm/list-team --destination ./helm-packages
+
+    - name: Deploy to GKE using Helm
+      run: |
+        helm upgrade --install list-team ./helm-packages/list-team-*.tgz \
+          --namespace my-namespace
