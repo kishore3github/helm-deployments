@@ -47,9 +47,9 @@ jobs:
     - name: Build Helm chart
       run: |
         ls -la
-        helm lint ${{ env.HELM_CHART_PATH }}
-        helm dependency update ${{ env.HELM_CHART_PATH }}
-        helm package ${{ env.HELM_CHART_PATH }} --destination ./helm-packages
+        helm lint ./list-team
+        helm dependency update ./list-team
+        helm package ./list-team --destination ./helm-packages
 
     - name: Deploy to GKE using Helm
       run: |
