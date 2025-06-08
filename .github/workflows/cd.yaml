@@ -46,6 +46,7 @@ jobs:
 
     - name: Build Helm chart
       run: |
+        ls -la
         helm lint ${{ env.HELM_CHART_PATH }}
         helm dependency update ${{ env.HELM_CHART_PATH }}
         helm package ${{ env.HELM_CHART_PATH }} --destination ./helm-packages

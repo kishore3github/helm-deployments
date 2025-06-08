@@ -3,8 +3,8 @@
 replicaCount: 2
 
 image:
-  repository: myrepo/list-team
-  tag: latest
+  repository: kishorechellaboina/list-team
+  tag: v1
   pullPolicy: IfNotPresent
 
 service:
