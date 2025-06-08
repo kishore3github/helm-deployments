@@ -24,14 +24,13 @@ resources:
 
 env: []
   # - name: ENV_VAR_NAME
-  #   value: "value"
-
+  
 ingress:
-  enabled: false
+  enabled: true
   className: ""
   annotations: {}
   hosts:
-    - host: chart-example.local
+    - host: list-team
       paths:
         - path: /
           pathType: ImplementationSpecific
