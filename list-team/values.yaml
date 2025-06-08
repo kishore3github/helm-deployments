@@ -1,6 +1,6 @@
 # Default values for list-team Helm chart.
 
-replicaCount: 2
+replicaCount: 1
 
 image:
   repository: kishorechellaboina/list-team
@@ -11,7 +11,7 @@ service:
   type: ClusterIP
   port: 80
 
-containerPort: 80
+containerPort: 8080
 
 resources:
   limits:
