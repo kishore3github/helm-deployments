@@ -1,0 +1,41 @@
+# Default values for list-team Helm chart.
+
+replicaCount: 2
+
+image:
+  repository: myrepo/list-team
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+env: []
+  # - name: ENV_VAR_NAME
+  #   value: "value"
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
