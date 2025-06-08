@@ -3,6 +3,10 @@
     Common template helpers for deployment, service, and ingress
 */}}
 
+{{- define "list-team.name" -}}
+{{- .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "list-team.fullname" -}}
 {{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
