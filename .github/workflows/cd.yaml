@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: perceptive-day-462306-t3
   GKE_CLUSTER: my-cluster-1
-  GKE_ZONE: us-central1-f
+  GKE_ZONE: us-central1
   HELM_CHART_PATH: ./list-team
 
 jobs:
