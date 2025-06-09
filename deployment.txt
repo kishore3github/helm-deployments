@@ -1,4 +1,4 @@
-list-team v2 development
-list-team v1 staging
+list-team v2 development true
+list-team v1 staging false
 my-service v1 staging
 my-service v2 development

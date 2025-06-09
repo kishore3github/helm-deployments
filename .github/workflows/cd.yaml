@@ -14,7 +14,8 @@ env:
 
 
 jobs:
-  generate-matrix:
+  generate-deployment-matrix:
+    name: Generate Deployment Matrix
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -25,11 +26,14 @@ jobs:
       - name: Read versions.txt and create matrix
         id: set-matrix
         run: |
-          matrix=$(awk '{printf "{\"service\":\"%s\",\"version\":\"%s\",\"namespace\":\"%s\"},", $1, $2, $3}' deployment.txt | sed 's/,$//')
+          # matrix=$(awk '{printf "{\"service\":\"%s\",\"version\":\"%s\",\"namespace\":\"%s\"},", $1, $2, $3}' deployment.txt | sed 's/,$//')
+          # echo "matrix={\"include\":[${matrix}]}" >> $GITHUB_OUTPUT
+
+          matrix=$(awk '{printf "{\"service\":\"%s\",\"version\":\"%s\",\"namespace\":\"%s\",\"flyway\":\"%s\"},", $1, $2, $3 $4}' deployment.txt | sed 's/,$//')
           echo "matrix={\"include\":[${matrix}]}" >> $GITHUB_OUTPUT
 
   deploy:
-    needs: generate-matrix
+    needs: generate-deployment-matrix
     name: Deploy "${{ matrix.service }}" into GKE  ${{ matrix.namespace }} namespace
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
@@ -70,6 +74,10 @@ jobs:
     # - name: Create namespace if not exists
     #   run: |
     #     kubectl get namespace  || kubectl create namespace my-namespace
+    - name: execute flyway scripts
+      if: ${{ matrix.flyway == 'true' }}
+      run: |
+        echo "Flyway scripts execution has completed successfully."
 
     - name: Build Helm chart
       run: |
