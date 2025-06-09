@@ -30,11 +30,15 @@ jobs:
 
   deploy:
     needs: generate-matrix
+    name: Deploy ${{ matrix.service }} Helm Charts into GKE  ${{ matrix.namespace }} namespace
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
-
-    name: Build and Deploy Helm Charts to GKE
+    env:
+      namespace: ${{ matrix.namespace }}
+      service: ${{ matrix.service }}
+      version: ${{ matrix.version }}
   
     steps:
     - name: Checkout code
@@ -70,7 +74,7 @@ jobs:
     - name: Build Helm chart
       run: |
         ls -la
-        ls -la ./${{ matrix.service }}
+        ls -la ./$service
         helm lint ./${{ matrix.service }}
         helm dependency update ./${{ matrix.service }}
         helm package ./${{ matrix.service }} --destination ./helm-packages
