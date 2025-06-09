@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.github/workflows/**'
 
 env:
   PROJECT_ID: perceptive-day-462306-t3
