@@ -10,6 +10,8 @@ env:
   GKE_CLUSTER: my-cluster-1
   GKE_ZONE: us-central1
   HELM_CHART_PATH: ./list-team
+  IMAGE_TAG: V1
+
 
 jobs:
   deploy:
@@ -59,4 +61,5 @@ jobs:
     - name: Deploy to GKE using Helm
       run: |
         helm upgrade --install list-team ./helm-packages/list-team-*.tgz \
-          --namespace development
+          --namespace development \
+          --set image.tag=${{ IMAGE_TAG }}
