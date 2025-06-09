@@ -62,4 +62,4 @@ jobs:
       run: |
         helm upgrade --install list-team ./helm-packages/list-team-*.tgz \
           --namespace development \
-          --set image.tag=${{ IMAGE_TAG }}
+          --set image.tag=${{ env.IMAGE_TAG }}
