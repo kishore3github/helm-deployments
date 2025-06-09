@@ -75,21 +75,21 @@ jobs:
       run: |
         ls -la
         ls -la ./$service
-        helm lint ./${{ matrix.service }}
-        helm dependency update ./${{ matrix.service }}
-        helm package ./${{ matrix.service }} --destination ./helm-packages
+        helm lint ./$service
+        helm dependency update ./$service
+        helm package ./$service --destination ./helm-packages
 
     - name: Deploy to GKE using Helm
       run: |
-        if [ -f ./${{ matrix.service }}/values-${{ matrix.namespace }}.yaml ]; then
-          helm upgrade --install ${{ matrix.service }} ./helm-packages/${{ matrix.service }}-*.tgz \
-            --namespace ${{ matrix.namespace }} \
-            --set image.tag=${{ matrix.version }} \
-            -f ./${{ matrix.service }}/values.yaml \
-            -f ./${{ matrix.service }}/values-${{ matrix.namespace }}.yaml
+        if [ -f ./$service/values-$namespace.yaml ]; then
+          helm upgrade --install $service ./helm-packages/$service-*.tgz \
+            --namespace $namespace \
+            --set image.tag=$version \
+            -f ./$service/values.yaml \
+            -f ./$service/values-$namespace.yaml
         else
-          helm upgrade --install ${{ matrix.service }} ./helm-packages/${{ matrix.service }}-*.tgz \
-            --namespace ${{ matrix.namespace }} \
-            --set image.tag=${{ matrix.version }} \
-            -f ./${{ matrix.service }}/values.yaml
+          helm upgrade --install $service ./helm-packages/$service-*.tgz \
+            --namespace $namespace \
+            --set image.tag=$version \
+            -f ./$service/values.yaml
         fi
