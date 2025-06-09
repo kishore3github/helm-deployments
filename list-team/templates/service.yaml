@@ -11,7 +11,6 @@ spec:
   type: {{ .Values.service.type }}
   selector:
     app: {{ include "list-team.name" . }}
-    release: {{ .Release.Name }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.targetPort }}

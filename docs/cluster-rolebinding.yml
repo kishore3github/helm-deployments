@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gha-deployer-binding
+subjects:
+  - kind: User
+    name: gha-deployment-gke@perceptive-day-462306-t3.iam.gserviceaccount.com  # Replace with the user or service account name
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin  # Replace with the ClusterRole you want to bind
+  apiGroup: rbac.authorization.k8s.io

@@ -2,10 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "list-team.name" . }}
-  labels:
-    {{- include "list-team.labels" . | nindent 4 }}
-  annotations:
-    kubernetes.io/ingress.class: "gce"
+    labels:
+  {{ include "list-team.labels" . | nindent 4 }}
+    annotations:
+      kubernetes.io/ingress.class: "gce"
     # Uncomment the next line to enable HTTPS redirect
     # networking.gke.io/managed-certificates: "{{ .Values.ingress.managedCertificate }}"
 spec:

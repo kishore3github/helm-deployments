@@ -1,0 +1,9 @@
+Name:         development
+Labels:       kubernetes.io/metadata.name=development
+              name=development
+Annotations:  <none>
+Status:       Active
+
+No resource quota.
+
+No LimitRange resource.
