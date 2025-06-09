@@ -10,16 +10,21 @@ metadata:
     # networking.gke.io/managed-certificates: "{{ .Values.ingress.managedCertificate }}"
 spec:
   rules:
-    - host: {{ .Values.ingress.host }}
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host }}
       http:
         paths:
-          - path: /
-            pathType: Prefix
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType | default "Prefix" }}
             backend:
               service:
-                name: {{ include "list-team.name" . }}
+                name: {{ include "list-team.name" $ }}
                 port:
-                  number: {{ .Values.service.port }}
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+    {{- end }}
+
   # Uncomment below to enable TLS with a managed certificate
   # tls:
   #   - hosts:
