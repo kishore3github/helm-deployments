@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "my-service.name" . }}
+  labels:
+    {{ include "my-service.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    # Uncomment the next line to enable HTTPS redirect
+    # networking.gke.io/managed-certificates: "{{ .Values.ingress.managedCertificate }}"
+spec:
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "my-service.name" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+    {{- end }}
+
+  # Uncomment below to enable TLS with a managed certificate
+  # tls:
+  #   - hosts:
+  #       - {{ .Values.ingress.host }}
+  #     secretName: {{ .Values.ingress.tlsSecret }}

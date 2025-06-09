@@ -1,0 +1,15 @@
+
+env: 
+- name: "ENVIRONMENT"
+  value: "staging"
+
+ingress:
+  enabled: true
+  className: "gce"
+  annotations: {}
+  hosts:
+    - host: my-service-staging.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []

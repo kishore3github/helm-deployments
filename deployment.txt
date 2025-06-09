@@ -1,2 +1,4 @@
-list-team v1 development
+list-team v2 development
 list-team v1 staging
+my-service v1 staging
+my-service v2 development

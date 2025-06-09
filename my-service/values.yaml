@@ -9,7 +9,7 @@ image:
 
 service:
   type: ClusterIP
-  name: list-team
+  name: my-service
   port: 80
   targetPort: 8080
 
@@ -23,7 +23,7 @@ resources:
     cpu: 100m
     memory: 128Mi
 
-env:
+env: 
 - name: "ENVIRONMENT"
   value: "development"
   
@@ -32,7 +32,7 @@ ingress:
   className: "gce"
   annotations: {}
   hosts:
-    - host: list-team-developement.com
+    - host: my-service-developement.com
       paths:
         - path: /
           pathType: Prefix
