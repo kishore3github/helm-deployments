@@ -29,7 +29,7 @@ jobs:
           # matrix=$(awk '{printf "{\"service\":\"%s\",\"version\":\"%s\",\"namespace\":\"%s\"},", $1, $2, $3}' deployment.txt | sed 's/,$//')
           # echo "matrix={\"include\":[${matrix}]}" >> $GITHUB_OUTPUT
 
-          matrix=$(awk '{printf "{\"service\":\"%s\",\"version\":\"%s\",\"namespace\":\"%s\",\"flyway\":\"%s\"},", $1, $2, $3 $4}' deployment.txt | sed 's/,$//')
+          matrix=$(awk '{printf "{\"service\":\"%s\",\"version\":\"%s\",\"namespace\":\"%s\",\"flyway\":\"%s\"},", $1, $2, $3, $4}' deployment.txt | sed 's/,$//')
           echo "matrix={\"include\":[${matrix}]}" >> $GITHUB_OUTPUT
 
   deploy:
