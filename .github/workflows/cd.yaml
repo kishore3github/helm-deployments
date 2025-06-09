@@ -10,7 +10,7 @@ env:
   GKE_CLUSTER: my-cluster-1
   GKE_ZONE: us-central1
   HELM_CHART_PATH: ./list-team
-  IMAGE_TAG: V1
+  IMAGE_TAG: v1
 
 
 jobs:
