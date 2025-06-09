@@ -30,7 +30,7 @@ jobs:
 
   deploy:
     needs: generate-matrix
-    name: Deploy ${{ matrix.service }} Helm Charts into GKE  ${{ matrix.namespace }} namespace
+    name: Deploy "${{ matrix.service }}" into GKE  ${{ matrix.namespace }} namespace
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     strategy:
