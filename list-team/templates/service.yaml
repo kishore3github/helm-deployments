@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "list-team.fullname" . }}
+  name: {{ include "list-team.name" . }}
   labels:
     app: {{ include "list-team.name" . }}
     chart: {{ include "list-team.chart" . }}

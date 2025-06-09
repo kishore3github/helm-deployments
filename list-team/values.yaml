@@ -27,13 +27,13 @@ env: []
   
 ingress:
   enabled: true
-  className: ""
+  className: "gce"
   annotations: {}
   hosts:
-    - host: list-team
+    - host: list-team-developement.com
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
   tls: []
 
 nodeSelector: {}

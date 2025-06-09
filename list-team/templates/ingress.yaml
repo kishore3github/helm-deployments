@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "list-team.fullname" . }}
+  name: {{ include "list-team.name" . }}
   labels:
     {{- include "list-team.labels" . | nindent 4 }}
   annotations:
@@ -17,7 +17,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "list-team.fullname" . }}
+                name: {{ include "list-team.name" . }}
                 port:
                   number: {{ .Values.service.port }}
   # Uncomment below to enable TLS with a managed certificate
