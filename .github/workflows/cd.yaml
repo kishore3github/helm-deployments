@@ -14,8 +14,25 @@ env:
 
 
 jobs:
-  deploy:
+  generate-matrix:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Read versions.txt and create matrix
+        id: set-matrix
+        run: |
+          matrix=$(awk '{printf "{\"service\":\"%s\",\"version\":\"%s\",\"namespace\":\"%s\"},", $1, $2, $3}' deployment.txt | sed 's/,$//')
+          echo "matrix={\"include\":[${matrix}]}" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: generate-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
 
     name: Build and Deploy Helm Charts to GKE
   
@@ -61,5 +78,5 @@ jobs:
     - name: Deploy to GKE using Helm
       run: |
         helm upgrade --install list-team ./helm-packages/list-team-*.tgz \
-          --namespace development \
-          --set image.tag=${{ env.IMAGE_TAG }}
+          --namespace ${{ matrix.namespace }} \
+          --set image.tag=${{ matrix.version }} 
