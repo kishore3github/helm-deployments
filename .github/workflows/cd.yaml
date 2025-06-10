@@ -28,10 +28,7 @@ jobs:
       - name: Read versions.txt and create matrix
         id: set-matrix
         run: |
-          # matrix=$(awk '{printf "{\"service\":\"%s\",\"version\":\"%s\",\"namespace\":\"%s\"},", $1, $2, $3}' deployment.txt | sed 's/,$//')
-          # echo "matrix={\"include\":[${matrix}]}" >> $GITHUB_OUTPUT
-
-          matrix=$(awk '{printf "{\"service\":\"%s\",\"version\":\"%s\",\"namespace\":\"%s\",\"flyway\":\"%s\"},", $1, $2, $3, $4}' deployment.txt | sed 's/,$//')
+          matrix=$(yq -o=json '.deployments[]' deployments.yaml | jq -c '. | {service, version, namespace, flyway}' | paste -sd, - | sed 's/^/[/' | sed 's/$/]/')
           echo "matrix={\"include\":[${matrix}]}" >> $GITHUB_OUTPUT
 
   deploy:

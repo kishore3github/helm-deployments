@@ -1,0 +1,17 @@
+deployments:
+    - service: list-team
+        version: v2
+        namespace: development
+        flyway: false
+    - service: list-team
+        version: v2
+        namespace: staging
+        flyway: false
+    - service: my-service
+        version: v1
+        namespace: staging
+        flyway: true
+    - service: my-service
+        version: v1
+        namespace: development
+        flyway: true
