@@ -42,7 +42,7 @@ jobs:
     concurrency: ${{ matrix.namespace }}-${{ matrix.service }}
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{fromJson(needs.generate-deployment-matrix.outputs.matrix)}}
+      matrix: ${{ fromJson(needs.generate-deployment-matrix.outputs.matrix) }}
     env:
       namespace: ${{ matrix.namespace }}
       service: ${{ matrix.service }}
