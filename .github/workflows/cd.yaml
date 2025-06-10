@@ -31,6 +31,9 @@ jobs:
           matrix=$(yq -o=json '.deployments[]' deployments.yaml | jq -c '. | {service, version, namespace, flyway}' | paste -sd, - | sed 's/^/[/' | sed 's/$/]/')
           echo "matrix={\"include\":[${matrix}]}" >> $GITHUB_OUTPUT
 
+          echo $matrix
+          echo "::set-output name=matrix::{\"include\":[${matrix}]}"
+
   deploy:
     needs: generate-deployment-matrix
     name: Deploy "${{ matrix.service }}" into GKE  ${{ matrix.namespace }} namespace
