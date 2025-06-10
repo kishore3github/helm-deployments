@@ -38,6 +38,7 @@ jobs:
     needs: generate-deployment-matrix
     name: Deploy "${{ matrix.service }}" into GKE  ${{ matrix.namespace }} namespace
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    environment: ${{ matrix.namespace }}
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{fromJson(needs.generate-deployment-matrix.outputs.matrix)}}
