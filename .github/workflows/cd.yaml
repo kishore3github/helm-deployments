@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - '.github/workflows/**'
+      # - '.github/workflows/**'
 
 env:
   PROJECT_ID: perceptive-day-462306-t3
