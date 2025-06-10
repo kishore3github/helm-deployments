@@ -1,6 +1,4 @@
 list-team v2 development false
 list-team v2 staging false
-list-team v1 preprod false
 my-service v1 staging true
 my-service v2 development true
-my-service v2 preprod true
