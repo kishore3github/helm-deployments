@@ -1,6 +1,4 @@
-# .github/workflows/main.yaml
-name: Seqential or Parallel Deployments
-# description: Deploy services either sequentially or in parallel based on the configuration in services.yaml
+name: Sequential or Parallel Deployments
 
 on:
   push:
@@ -13,8 +11,6 @@ jobs:
     outputs:
       matrix: ${{ steps.read.outputs.matrix }}
       mode: ${{ steps.read.outputs.mode }}
-      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -35,7 +31,7 @@ jobs:
           mode=$(yq -r '.mode' deployments.yaml)
           echo "mode=$mode" >> $GITHUB_OUTPUT
           echo "$matrix"
-          echo $mode
+          echo "$mode"
 
   deployments-parallel:
     needs: read-services
@@ -45,16 +41,13 @@ jobs:
         service: ${{ fromJson(needs.read-services.outputs.matrix || '[]') }}
     uses: kishore3github/helm-deployments/.github/workflows/reusable_cd.yaml@main
     with:
-      service: ${{ matrix.service.name }}
+      service: ${{ matrix.service.service }}
       namespace: ${{ matrix.service.namespace }}
-      image_tag: ${{ matrix.service.image_tag }}
+      image_tag: ${{ matrix.service.version }}
       flyway: ${{ matrix.service.flyway }}
-    # secrets:
+    secrets:
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
-
-
 
   deployments-sequential:
     needs: read-services
@@ -74,9 +67,9 @@ jobs:
         run: |
           echo "Deploying services sequentially"
           echo "$MATRIX" | jq -c '.[]' | while read service; do
-            name=$(echo $service | jq -r '.name')
+            name=$(echo $service | jq -r '.service')
             namespace=$(echo $service | jq -r '.namespace')
-            image_tag=$(echo $service | jq -r '.image_tag')
+            image_tag=$(echo $service | jq -r '.version')
             flyway=$(echo $service | jq -r '.flyway')
             if [ "$name" == "null" ] || [ "$namespace" == "null" ] || [ "$image_tag" == "null" ]; then
               echo "Skipping service with missing fields: $service"
@@ -88,16 +81,11 @@ jobs:
             gh workflow run reusable_cd.yaml -f service="$name" -f namespace="$namespace" -f image_tag="$image_tag" -f flyway="$flyway"
 
             echo "Waiting for deployment of $name to complete..."
-            # Wait a few seconds to ensure the workflow is registered
             sleep 20
 
-            # Get the latest run ID for the workflow
             run_id=$(gh run list --workflow=reusable_cd.yaml --limit=1 --json databaseId --jq '.[0].databaseId')
-
-            # Wait for that run to complete
             gh run watch "$run_id"
 
             echo "Deployment of $name completed."
             sleep 10
           done
-
