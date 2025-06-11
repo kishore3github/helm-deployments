@@ -1,18 +1,18 @@
 mode: 'sequential'
 deployments:
-  - service: list-team
-    version: v3
+  - name: list-team
+    image_tag: v3
     namespace: development
     flyway: false
-  - service: list-team
-    version: v2
+  - name: list-team
+    image_tag: v2
     namespace: staging
     flyway: false
-  - service: my-service
-    version: v2
+  - name: my-service
+    image_tag: v2
     namespace: staging
     flyway: true
-  - service: my-service
-    version: v2
+  - name: my-service
+    image_tag: v2
     namespace: development
     flyway: true
