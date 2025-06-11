@@ -1,18 +1,18 @@
 mode: 'parallel'
 deployments:
-  - name: list-team
+  - service: list-team
     image_tag: v3
     namespace: development
     flyway: false
-  - name: list-team
+  - service: list-team
     image_tag: v2
     namespace: staging
     flyway: false
-  - name: my-service
+  - service: my-service
     image_tag: v2
     namespace: staging
     flyway: true
-  - name: my-service
+  - service: my-service
     image_tag: v2
     namespace: development
     flyway: true
