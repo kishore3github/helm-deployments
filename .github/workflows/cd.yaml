@@ -105,3 +105,40 @@ jobs:
             -f ./$service/values.yaml
         fi
 
+
+
+        # dynamic-deploy:
+        #   needs: generate-deployment-matrix
+        #   name: Dynamic Deploy from deployments.yaml
+        #   runs-on: ubuntu-latest
+        #   steps:
+        #     - name: Checkout code
+        #       uses: actions/checkout@v3
+
+        #     - name: Parse deployments.yaml and generate jobs matrix
+        #       id: parse-yaml
+        #       run: |
+        #         envs=$(yq -o=json '.environment' deployments.yaml)
+        #         echo "envs=$envs" >> $GITHUB_OUTPUT
+
+        #     - name: Run deployments (sequential/parallel)
+        #       run: |
+        #         python3 <<EOF
+        #         import os, subprocess, json
+        #         envs = json.loads(os.environ['ENVS'])
+        #         for env, config in envs.items():
+        #             services = config.get('services', [])
+        #             if isinstance(services, list):
+        #                 procs = []
+        #                 for svc in services:
+        #                     print(f"Deploying {svc['name']} to {env} in parallel")
+        #                     p = subprocess.Popen(['echo', f"Deploy {svc['name']} with args {svc.get('args',{})}"])
+        #                     procs.append(p)
+        #                 for p in procs:
+        #                     p.wait()
+        #             else:
+        #                 print(f"Deploying {services['name']} to {env} sequentially")
+        #                 subprocess.run(['echo', f"Deploy {services['name']} with args {services.get('args',{})}"])
+        #         EOF
+        #       env:
+        #         ENVS: ${{ steps.parse-yaml.outputs.envs }}

@@ -1,0 +1,27 @@
+name: test pipeline
+on: 
+  push:   
+    branches:
+      - main
+    paths:
+      - "./github/workflows/test.yaml"
+
+jobs:
+  test:
+    name: Test Job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: execute scripts
+        run: |
+          echo "Running test job"
+          chmod +x ./generate-sequnetial-jobs.sh
+          ./generate-sequnetial-jobs.sh
+
+      - name: Print environment variables
+        run: |
+          # print workflow parse-yaml
+          cat workflow.yaml
+
+  
