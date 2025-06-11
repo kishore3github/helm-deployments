@@ -54,16 +54,15 @@ env:
 
 jobs:
   deploy:
-    needs: generate-deployment-input
-    name: Deploy "${{ input.service }}" into GKE  ${{ input.namespace }} namespace
-    environment: ${{ input.namespace }}
-    concurrency: ${{ input.namespace }}-${{ input.service }}
+    name: Deploy "${{ inputs.service }}" into GKE  ${{ inputs.namespace }} namespace
+    environment: ${{ inputs.namespace }}
+    concurrency: ${{ inputs.namespace }}-${{ inputs.service }}
     runs-on: ubuntu-latest
     env:
-      namespace: ${{ input.namespace }}
-      version: ${{ input.image_tag }}
-      flyway: ${{ input.flyway }}
-      service: ${{ input.service }}
+      namespace: ${{ inputs.namespace }}
+      version: ${{ inputs.image_tag }}
+      flyway: ${{ inputs.flyway }}
+      service: ${{ inputs.service }}
   
     steps:
     - name: Checkout code
@@ -93,7 +92,7 @@ jobs:
       uses: azure/setup-helm@v3
 
     - name: execute flyway scripts
-      if: ${{ input.flyway == 'true' }}
+      if: ${{ inputs.flyway == 'true' }}
       run: |
         echo "Flyway scripts execution has completed successfully."
 
