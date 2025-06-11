@@ -52,6 +52,14 @@ on:
         required: true
         type: boolean
         default: false
+      GCP_SA_KEY:
+        description: 'Google Cloud Service Account Key'
+        required: true
+        type: string
+      PERSONAL_ACCESS_TOKEN:
+        description: 'GitHub Personal Access Token for triggering workflows'
+        required: true
+        type: string
 
 env:
   PROJECT_ID: perceptive-day-462306-t3
