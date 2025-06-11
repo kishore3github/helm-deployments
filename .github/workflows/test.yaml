@@ -16,7 +16,7 @@ jobs:
       - name: execute scripts
         run: |
           echo "Running test job"
-          chmod +x ./generate-sequnetial-jobs.sh
+          chmod +x generate-sequnetial-jobs.sh
           ./generate-sequnetial-jobs.sh
 
       - name: Print environment variables
