@@ -1,4 +1,4 @@
-mode: 'sequential'
+mode: 'parallel'
 deployments:
   - name: list-team
     image_tag: v3
