@@ -14,10 +14,11 @@ name: Sequential Jobs Workflow
 on: [push]
 jobs:
 EOF
+i=0
 for service in "${services[@]}"; do
-  svc="${!service[$i]}"
+  svc="${services[$i]}"
   prev_index=$((i - 1))
-  prev_svc="${!services[$prev_index]}"
+  prev_svc="${services[$prev_index]}"
 
   echo "    deploy-${svc}:" >> $output
   echo "        runs-on: ubuntu-latest" >> $output 
@@ -36,5 +37,3 @@ EOF
   i=$((i + 1))
 done
 echo "Workflow file generated: $output"
-i=0
-done    
