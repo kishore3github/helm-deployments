@@ -45,7 +45,7 @@ jobs:
       namespace: ${{ matrix.service.namespace }}
       image_tag: ${{ matrix.service.version }}
       flyway: ${{ matrix.service.flyway }}
-    # secrets:
+    secrets:
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
