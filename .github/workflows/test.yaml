@@ -46,7 +46,7 @@ jobs:
       service: ${{ matrix.service.name }}
       namespace: ${{ matrix.service.namespace }}
       image_tag: ${{ matrix.service.image_tag }}
-      flyway: ${{ matrix.service.flyway | default('false') }}
+      flyway: ${{ matrix.service.flyway }}
 
 
 
@@ -71,7 +71,11 @@ jobs:
             name=$(echo $service | jq -r '.name')
             namespace=$(echo $service | jq -r '.namespace')
             image_tag=$(echo $service | jq -r '.image_tag')
-            flyway=$(echo $service | jq -r '.flyway // "false"')
+            flyway=$(echo $service | jq -r '.flyway')
+            if [ "$name" == "null" ] || [ "$namespace" == "null" ] || [ "$image_tag" == "null" ]; then
+              echo "Skipping service with missing fields: $service"
+              continue
+            fi
             echo "Processing service: $name"
 
             echo "Triggering deployment for $name in namespace $namespace with image tag $image_tag"
