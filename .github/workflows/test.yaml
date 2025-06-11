@@ -26,11 +26,11 @@ jobs:
       - name: Read services
         id: read
         run: |
-          echo "Reading services from services.yaml"
-          matrix=$(yq -o=json '.deployments' services.yaml | jq -c)
+          echo "Reading services from deployments.yaml"
+          matrix=$(yq -o=json '.deployments' deployments.yaml | jq -c)
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
-          mode=$(yq -r '.mode' services.yaml)
+          mode=$(yq -r '.mode' deployments.yaml)
           echo "mode=$mode" >> $GITHUB_OUTPUT
           echo "$matrix"
           echo $mode
