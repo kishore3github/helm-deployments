@@ -1,27 +1,90 @@
-name: test pipeline
-on: 
-  push:   
+# .github/workflows/main.yaml
+name: Seqential or Parallel Deployments
+# description: Deploy services either sequentially or in parallel based on the configuration in services.yaml
+
+on:
+  push:
     branches:
       - main
-    # paths:
-      # - "./github/workflows/test.yaml"
 
 jobs:
-  test:
-    name: Test Job
+  read-services:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.read.outputs.matrix }}
+      mode: ${{ steps.read.outputs.mode }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: execute scripts
-        run: |
-          echo "Running test job"
-          chmod +x generate-sequential-jobs.sh
-          ./generate-sequential-jobs.sh
 
-      - name: Print environment variables
+      - name: Install yq and jq
         run: |
-          # print workflow parse-yaml
-          cat workflow.yaml
+          sudo apt-get update
+          sudo apt-get install -y jq
+          sudo snap install yq
 
-  
+      - name: Read services
+        id: read
+        run: |
+          echo "Reading services from services.yaml"
+          matrix=$(yq -o=json '.deployments' services.yaml | jq -c)
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+          mode=$(yq -r '.mode' services.yaml)
+          echo "mode=$mode" >> $GITHUB_OUTPUT
+          echo "$matrix"
+          echo $mode
+
+  deployments-parallel:
+    needs: read-services
+    if: ${{ needs.read-services.outputs.mode == 'parallel' }}
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.read-services.outputs.matrix) }}
+    uses: kishore3github/helm-deployments/.github/workflows/reusable_cd.yaml@main
+    with:
+      service: ${{ matrix.service.name }}
+      namespace: ${{ matrix.service.namespace }}
+      image_tag: ${{ matrix.service.image_tag }}
+
+
+
+  deployments-sequential:
+    needs: read-services
+    if: ${{ needs.read-services.outputs.mode == 'sequential' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Deploy services sequentially
+        env:
+          MATRIX: ${{ needs.read-services.outputs.matrix }}
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          echo "Deploying services sequentially"
+          echo "$MATRIX" | jq -c '.[]' | while read service; do
+            name=$(echo $service | jq -r '.name')
+            namespace=$(echo $service | jq -r '.namespace')
+            image_tag=$(echo $service | jq -r '.image_tag')
+
+            echo "Triggering deployment for $name in namespace $namespace with image tag $image_tag"
+            gh workflow run reusable_cd.yaml -f service="$name" -f namespace="$namespace" -f image_tag="$image_tag"
+
+            echo "Waiting for deployment of $name to complete..."
+            # Wait a few seconds to ensure the workflow is registered
+            sleep 20
+
+            # Get the latest run ID for the workflow
+            run_id=$(gh run list --workflow=reusable_cd.yaml --limit=1 --json databaseId --jq '.[0].databaseId')
+
+            # Wait for that run to complete
+            gh run watch "$run_id"
+
+            echo "Deployment of $name completed."
+            sleep 10
+          done
+
