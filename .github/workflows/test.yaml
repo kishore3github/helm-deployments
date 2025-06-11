@@ -13,6 +13,8 @@ jobs:
     outputs:
       matrix: ${{ steps.read.outputs.matrix }}
       mode: ${{ steps.read.outputs.mode }}
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -47,8 +49,8 @@ jobs:
       namespace: ${{ matrix.service.namespace }}
       image_tag: ${{ matrix.service.image_tag }}
       flyway: ${{ matrix.service.flyway }}
-      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      GCP_SA_KEY: ${{ needs.read-services.outputs.GCP_SA_KEY }}
+      PERSONAL_ACCESS_TOKEN: ${{ needs.read-services.outputs.PERSONAL_ACCESS_TOKEN }}
 
 
 
