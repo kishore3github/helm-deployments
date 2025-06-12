@@ -82,6 +82,7 @@ jobs:
                   echo "🔄 Running gh workflow for $name in $ns..."
 
                   run_output=$(gh workflow run reusable_cd.yaml \
+                    --ref main \
                     -f service="$name" \
                     -f image_tag="$image" \
                     -f namespace="$ns" \
