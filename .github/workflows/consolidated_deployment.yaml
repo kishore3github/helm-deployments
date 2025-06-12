@@ -39,37 +39,37 @@ jobs:
           yq -o=json '.deployments' consolidated-deployments.yaml | jq -c '.[]' | while read -r serviceGroup; do
             echo "=== Deploying group $i in parallel ==="
             run_ids=()
-      
+
             # Trigger parallel workflows in this group
             echo "$serviceGroup" | jq -c '.[]' | while read -r svc; do
               name=$(echo "$svc" | jq -r '.name')
               image=$(echo "$svc" | jq -r '.image')
               ns=$(echo "$svc" | jq -r '.namespace')
               flyway=$(echo "$svc" | jq -r '.flyway')
-      
+
               echo "Triggering $name"
               gh workflow run reusable_cd.yaml \
                 -f service="$name" \
                 -f image_tag="$image" \
                 -f namespace="$ns" \
-                -f flyway="$flyway" 
-      
+                -f flyway="$flyway"
+
               # Sleep 5 seconds to avoid same-timestamp runs (gh bug sometimes)
               sleep 5
-      
+
               # Get the latest run ID (safe because they're unique now)
               run_id=$(gh run list --workflow=reusable_cd.yaml --limit=1 --json databaseId -q '.[0].databaseId')
               echo "Run ID for $name: $run_id"
               run_ids+=($run_id)
             done
-      
-            echo "Waiting for workflows to finish for group $i..."
+
+            # Wait for all workflows in this group to finish before moving to next group
             for id in "${run_ids[@]}"; do
               while true; do
                 status=$(gh run view "$id" --json status -q '.status')
                 conclusion=$(gh run view "$id" --json conclusion -q '.conclusion')
                 echo "Workflow $id status: $status / $conclusion"
-                
+
                 if [[ "$status" == "completed" ]]; then
                   if [[ "$conclusion" == "success" ]]; then
                     echo "✅ Run $id succeeded"
@@ -82,8 +82,7 @@ jobs:
                 sleep 10
               done
             done
-      
+
             echo "✅ Group $i complete"
             ((i+=1))
           done
- 
