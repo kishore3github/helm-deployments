@@ -74,6 +74,8 @@ jobs:
                     exit 0
                   fi
 
+                  echo "🔄 Running gh workflow for $name in $ns..."
+                  
                   run_output=$(gh workflow run reusable_cd.yaml \
                     -f service="$name" \
                     -f image_tag="$image" \
@@ -81,11 +83,17 @@ jobs:
                     -f flyway="$flyway" \
                     -f trigger_id="$trigger_id" \
                     --json id 2>&1)
-                  
                   exit_code=$?
-                  echo "gh workflow run exit code: $exit_code"
-                  echo "gh workflow run output:"
+
+                  echo "🔍 gh workflow run exit code: $exit_code"
+                  echo "📄 gh workflow run output:"
                   echo "$run_output"
+
+                  if [[ $exit_code -ne 0 ]]; then
+                    echo "❌ gh workflow run failed for $name in $ns"
+                    exit 1
+                  fi
+
 
 
                   echo "Run output: $run_output"
