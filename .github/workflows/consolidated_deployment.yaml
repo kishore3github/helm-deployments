@@ -34,8 +34,10 @@ jobs:
       - name: Read deployment.yaml and deploy sequentially
         env:
           GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          DRY_RUN: falses
+          DRY_RUN: false
         run: |
+            echo "GH_TOKEN: ${GH_TOKEN:-(not set)}"
+            echo "GITHUB_REF_NAME: ${GITHUB_REF_NAME:-(not set)}"
             DRY_RUN="${{ env.DRY_RUN }}"
             echo "Reading services from consolidated-deployments.yaml"
             i=0
@@ -79,6 +81,12 @@ jobs:
                     -f flyway="$flyway" \
                     -f trigger_id="$trigger_id" \
                     --json id 2>&1)
+                  
+                  exit_code=$?
+                  echo "gh workflow run exit code: $exit_code"
+                  echo "gh workflow run output:"
+                  echo "$run_output"
+
 
                   echo "Run output: $run_output"
                   new_run_id=$(echo "$run_output" | jq -r '.id // empty')
