@@ -1,0 +1,23 @@
+deployments:
+  - - name: list-team
+      image: v3
+      namespace: development
+      flyway: false
+    - name: list-team
+      image: v2
+      namespace: staging
+      flyway: false
+ 
+  - - name: my-service
+      image: v3
+      namespace: development
+      flyway: true
+    - name: my-service
+      image: v2
+      namespace: staging
+      flyway: true
+ 
+  - - name: my-service
+      image: v1
+      namespace: development
+      flyway: true

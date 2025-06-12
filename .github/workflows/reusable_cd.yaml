@@ -1,4 +1,4 @@
-name: CD - Deploy Helm Charts to GKE
+name: CD - Deploy ${{ inputs.service }} to GKE
 
 on:
   workflow_dispatch:

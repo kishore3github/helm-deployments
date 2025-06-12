@@ -1,0 +1,87 @@
+# .github/workflows/main.yaml
+name: Consolidated Deployment Workflow
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Mode of operation'
+        required: true
+        default: 'sequential'
+        type: choice
+        options:
+          - sequential
+          - parallel
+
+jobs:
+  read-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install yq and jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          sudo snap install yq
+
+      - name: Read deployment.yaml and deploy sequentially
+        env:
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          i=0
+          yq -o=json '.deployments' consolidated-deployments.yaml | jq -c '.[]' | while read -r serviceGroup; do
+            echo "=== Deploying group $i in parallel ==="
+            run_ids=()
+      
+            # Trigger parallel workflows in this group
+            echo "$serviceGroup" | jq -c '.[]' | while read -r svc; do
+              name=$(echo "$svc" | jq -r '.name')
+              image=$(echo "$svc" | jq -r '.image')
+              ns=$(echo "$svc" | jq -r '.namespace')
+              flyway=$(echo "$svc" | jq -r '.flyway')
+      
+              echo "Triggering $name"
+              gh workflow run consolidated-deployment.yaml \
+                -f service="$name" \
+                -f image_tag="$image" \
+                -f namespace="$ns" \
+                -f flyway="$flyway" 
+      
+              # Sleep a second to avoid same-timestamp runs (gh bug sometimes)
+              sleep 1
+      
+              # Get the latest run ID (safe because they're unique now)
+              run_id=$(gh run list --workflow=consolidated-deployment.yaml --limit=1 --json databaseId -q '.[0].databaseId')
+              echo "Run ID for $name: $run_id"
+              run_ids+=($run_id)
+            done
+      
+            echo "Waiting for workflows to finish for group $i..."
+            for id in "${run_ids[@]}"; do
+              while true; do
+                status=$(gh run view "$id" --json status -q '.status')
+                conclusion=$(gh run view "$id" --json conclusion -q '.conclusion')
+                echo "Workflow $id status: $status / $conclusion"
+                
+                if [[ "$status" == "completed" ]]; then
+                  if [[ "$conclusion" == "success" ]]; then
+                    echo "✅ Run $id succeeded"
+                    break
+                  else
+                    echo "❌ Run $id failed or cancelled"
+                    exit 1
+                  fi
+                fi
+                sleep 10
+              done
+            done
+      
+            echo "✅ Group $i complete"
+            ((i+=1))
+          done
+ 
