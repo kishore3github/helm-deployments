@@ -1,19 +1,12 @@
 name: Sequential or Parallel Deployments
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  workflow_dispatch:
-    inputs:
-      mode:
-        description: 'Mode of operation'
-        required: true
-        default: 'sequential'
-        type: choice
-        options:
-          - sequential
-          - parallel
+  push:
+    branches:
+      - main
+    paths:
+      - 'deployments.yaml'
+ 
 jobs:
   read-services:
     runs-on: ubuntu-latest
