@@ -38,7 +38,8 @@ jobs:
           i=0
           yq -o=json '.deployments' consolidated-deployments.yaml | jq -c '.[]' | while read -r serviceGroup; do
             echo "=== Deploying group $i in parallel ==="
-            run_ids=()
+            run_ids_file="run_ids_$i.txt"
+            > "$run_ids_file"
 
             # Trigger parallel workflows in this group
             echo "$serviceGroup" | jq -c '.[]' | while read -r svc; do
@@ -60,13 +61,13 @@ jobs:
               # Get the latest run ID (safe because they're unique now)
               run_id=$(gh run list --workflow=reusable_cd.yaml --limit=1 --json databaseId -q '.[0].databaseId')
               echo "Run ID for $name: $run_id"
-              run_ids+=($run_id)
+              echo "$run_id" >> "$run_ids_file"
               gh run watch "$run_id" --exit-status --timeout 600 &
               echo "Watching run $run_id in background"
             done
 
             # Wait for all workflows in this group to finish before moving to next group
-            for id in "${run_ids[@]}"; do
+            while read -r id; do
               while true; do
                 status=$(gh run view "$id" --json status -q '.status')
                 conclusion=$(gh run view "$id" --json conclusion -q '.conclusion')
@@ -83,7 +84,8 @@ jobs:
                 fi
                 sleep 10
               done
-            done
+            done < "$run_ids_file"
+            rm -f "$run_ids_file"
 
             echo "✅ Group $i complete"
             ((i+=1))
