@@ -80,6 +80,7 @@ jobs:
       version: ${{ inputs.image_tag }}
       flyway: ${{ inputs.flyway }}
       service: ${{ inputs.service }}
+      trigger_id: ${{ inputs.trigger_id }}
   
     steps:
     - name: Checkout code
