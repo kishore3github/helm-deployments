@@ -1,4 +1,4 @@
-mode: 'parallel'
+mode: 'sequential'
 deployments:
   - service: list-team
     version: v3
