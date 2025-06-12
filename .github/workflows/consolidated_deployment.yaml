@@ -34,13 +34,18 @@ jobs:
       - name: Read deployment.yaml and deploy sequentially
         env:
           GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           DRY_RUN: false
         run: |
             echo "GH_TOKEN: ${GH_TOKEN:-(not set)}"
+            echo "GITHUB_TOKEN: ${GITHUB_TOKEN:-(not set)}"
             echo "GITHUB_REF_NAME: ${GITHUB_REF_NAME:-(not set)}"
             DRY_RUN="${{ env.DRY_RUN }}"
             echo "Reading services from consolidated-deployments.yaml"
             i=0
+
+            # Ensure gh is authenticated
+            echo "${GH_TOKEN}" | gh auth login --with-token
 
             yq -o=json '.deployments' consolidated-deployments.yaml | jq -c '.[]' | while read -r serviceGroup; do
               echo "=== Deploying group $i in parallel ==="
@@ -75,7 +80,7 @@ jobs:
                   fi
 
                   echo "🔄 Running gh workflow for $name in $ns..."
-                  
+
                   run_output=$(gh workflow run reusable_cd.yaml \
                     -f service="$name" \
                     -f image_tag="$image" \
