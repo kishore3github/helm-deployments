@@ -52,14 +52,16 @@ jobs:
                 flyway=$(echo "$svc" | jq -r '.flyway')
 
                 echo "Triggering $name in namespace $ns with image $image and flyway=$flyway"
+                unique_id=$(date +%s%N)  # nanosecond timestamp
                 (
                   # Trigger workflow and capture the run id directly from the output
-                  run_output=$(gh workflow run reusable_cd.yaml \
-                    -f service="$name" \
-                    -f image_tag="$image" \
-                    -f namespace="$ns" \
-                    -f flyway="$flyway" \
-                    --json id 2>/dev/null)
+                run_output=$(gh workflow run reusable_cd.yaml \
+                  -f service="$name" \
+                  -f image_tag="$image" \
+                  -f namespace="$ns" \
+                  -f flyway="$flyway" \
+                  -f trigger_id="$unique_id" \
+                  --json id 2>/dev/null)
 
                   new_run_id=$(echo "$run_output" | jq -r '.id // empty')
 
@@ -68,7 +70,14 @@ jobs:
                     for attempt in {1..12}; do
                       sleep 5
                       # Get the most recent run for this workflow and branch
-                      new_run_id=$(gh run list --workflow=reusable_cd.yaml --branch="$GITHUB_REF_NAME" --json databaseId,headBranch,headSha -q '.[0].databaseId')
+                      new_run_id=$(gh run list --workflow=reusable_cd.yaml --branch="$GITHUB_REF_NAME" --json databaseId,headBranch,headSha,createdAt,displayTitle \
+                      
+                      | jq -r --arg name "$name" --arg ns "$ns" --arg id "$trigger_id" '                
+                      map(select(.displayTitle | test($name) and test($ns)))                       
+                      | sort_by(.createdAt)                      
+                      | reverse 
+                      | .[0].databaseId // empty')
+
                       if [[ -n "$new_run_id" ]]; then
                         break
                       fi
