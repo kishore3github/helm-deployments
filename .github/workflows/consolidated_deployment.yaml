@@ -34,7 +34,7 @@ jobs:
       - name: Read deployment.yaml and deploy sequentially
         env:
           GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          DRY_RUN: true
+          DRY_RUN: falses
         run: |
             DRY_RUN="${{ env.DRY_RUN }}"
             echo "Reading services from consolidated-deployments.yaml"
