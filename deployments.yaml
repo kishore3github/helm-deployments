@@ -9,7 +9,7 @@ deployments:
     namespace: staging
     flyway: false
   - service: my-service
-    version: v2
+    version: v1
     namespace: staging
     flyway: true
   - service: my-service
