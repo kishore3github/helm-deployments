@@ -41,18 +41,18 @@ jobs:
               run_ids_file="run_ids_$i.txt"
               > "$run_ids_file"
 
-              # Read all services in the group into an array
+              # Read all services in the group into an array (including duplicates)
               mapfile -t services < <(echo "$serviceGroup" | jq -c '.[]')
 
               pids=()
               for svc in "${services[@]}"; do
-                (
-                  name=$(echo "$svc" | jq -r '.name')
-                  image=$(echo "$svc" | jq -r '.image')
-                  ns=$(echo "$svc" | jq -r '.namespace')
-                  flyway=$(echo "$svc" | jq -r '.flyway')
+                name=$(echo "$svc" | jq -r '.name')
+                ns=$(echo "$svc" | jq -r '.namespace')
+                image=$(echo "$svc" | jq -r '.image')
+                flyway=$(echo "$svc" | jq -r '.flyway')
 
-                  echo "Triggering $name in namespace $ns with image $image and flyway=$flyway"
+                echo "Triggering $name in namespace $ns with image $image and flyway=$flyway"
+                (
                   # Trigger workflow and capture the run id directly from the output
                   run_output=$(gh workflow run reusable_cd.yaml \
                     -f service="$name" \
