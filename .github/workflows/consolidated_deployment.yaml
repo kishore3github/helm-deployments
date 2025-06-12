@@ -61,6 +61,8 @@ jobs:
               run_id=$(gh run list --workflow=reusable_cd.yaml --limit=1 --json databaseId -q '.[0].databaseId')
               echo "Run ID for $name: $run_id"
               run_ids+=($run_id)
+              gh run watch "$run_id" --exit-status --timeout 600 &
+              echo "Watching run $run_id in background"
             done
 
             # Wait for all workflows in this group to finish before moving to next group
