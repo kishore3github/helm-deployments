@@ -41,52 +41,66 @@ jobs:
             run_ids_file="run_ids_$i.txt"
             > "$run_ids_file"
 
-            # Trigger parallel workflows in this group
+            # Trigger parallel workflows in this group and collect run IDs
+            pids=()
             echo "$serviceGroup" | jq -c '.[]' | while read -r svc; do
-              name=$(echo "$svc" | jq -r '.name')
-              image=$(echo "$svc" | jq -r '.image')
-              ns=$(echo "$svc" | jq -r '.namespace')
-              flyway=$(echo "$svc" | jq -r '.flyway')
+              (
+                name=$(echo "$svc" | jq -r '.name')
+                image=$(echo "$svc" | jq -r '.image')
+                ns=$(echo "$svc" | jq -r '.namespace')
+                flyway=$(echo "$svc" | jq -r '.flyway')
 
-              echo "Triggering $name"
-              gh workflow run reusable_cd.yaml \
-                -f service="$name" \
-                -f image_tag="$image" \
-                -f namespace="$ns" \
-                -f flyway="$flyway"
+                echo "Triggering $name"
+                gh workflow run reusable_cd.yaml \
+                  -f service="$name" \
+                  -f image_tag="$image" \
+                  -f namespace="$ns" \
+                  -f flyway="$flyway"
 
-              # Sleep 5 seconds to avoid same-timestamp runs (gh bug sometimes)
-              sleep 5
+                sleep 5
 
-              # Get the latest run ID (safe because they're unique now)
-              run_id=$(gh run list --workflow=reusable_cd.yaml --limit=1 --json databaseId -q '.[0].databaseId')
-              echo "Run ID for $name: $run_id"
-              echo "$run_id" >> "$run_ids_file"
-              gh run watch "$run_id" --exit-status --timeout 600 &
-              echo "Watching run $run_id in background"
+                run_id=$(gh run list --workflow=reusable_cd.yaml --limit=1 --json databaseId -q '.[0].databaseId')
+                echo "Run ID for $name: $run_id"
+                echo "$run_id" >> "$run_ids_file"
+              ) &
+              pids+=($!)
             done
 
-            # Wait for all workflows in this group to finish before moving to next group
+            # Wait for all background triggers to finish
+            for pid in "${pids[@]}"; do
+              wait "$pid"
+            done
+
+            # Now watch all runs in parallel
+            watch_pids=()
             while read -r id; do
-              while true; do
-                status=$(gh run view "$id" --json status -q '.status')
-                conclusion=$(gh run view "$id" --json conclusion -q '.conclusion')
-                echo "Workflow $id status: $status / $conclusion"
+              (
+                while true; do
+                  status=$(gh run view "$id" --json status -q '.status')
+                  conclusion=$(gh run view "$id" --json conclusion -q '.conclusion')
+                  echo "Workflow $id status: $status / $conclusion"
 
-                if [[ "$status" == "completed" ]]; then
-                  if [[ "$conclusion" == "success" ]]; then
-                    echo "✅ Run $id succeeded"
-                    break
-                  else
-                    echo "❌ Run $id failed or cancelled"
-                    exit 1
+                  if [[ "$status" == "completed" ]]; then
+                    if [[ "$conclusion" == "success" ]]; then
+                      echo "✅ Run $id succeeded"
+                      break
+                    else
+                      echo "❌ Run $id failed or cancelled"
+                      exit 1
+                    fi
                   fi
-                fi
-                sleep 10
-              done
+                  sleep 10
+                done
+              ) &
+              watch_pids+=($!)
             done < "$run_ids_file"
-            rm -f "$run_ids_file"
 
+            # Wait for all watches to finish
+            for pid in "${watch_pids[@]}"; do
+              wait "$pid"
+            done
+
+            rm -f "$run_ids_file"
             echo "✅ Group $i complete"
             ((i+=1))
           done
