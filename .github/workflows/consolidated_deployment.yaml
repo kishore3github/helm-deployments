@@ -35,6 +35,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
+          echo "Reading services from consolidated-deployments.yaml"
             i=0
             yq -o=json '.deployments' consolidated-deployments.yaml | jq -c '.[]' | while read -r serviceGroup; do
               echo "=== Deploying group $i in parallel ==="
