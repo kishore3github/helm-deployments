@@ -22,6 +22,11 @@ on:
         required: true
         type: boolean
         default: false
+      trigger_id:
+        description: 'Unique identifier for the trigger, used to track deployments'
+        required: false
+        type: string
+        default: ''
   workflow_call:
     inputs:
       service:
