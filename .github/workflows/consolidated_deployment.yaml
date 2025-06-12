@@ -35,33 +35,35 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
-          i=0
-          yq -o=json '.deployments' consolidated-deployments.yaml | jq -c '.[]' | while read -r serviceGroup; do
+            i=0
+            yq -o=json '.deployments' consolidated-deployments.yaml | jq -c '.[]' | while read -r serviceGroup; do
             echo "=== Deploying group $i in parallel ==="
             run_ids_file="run_ids_$i.txt"
             > "$run_ids_file"
 
-            # Trigger parallel workflows in this group and collect run IDs
+            # Read all services in the group into an array
+            mapfile -t services < <(echo "$serviceGroup" | jq -c '.[]')
+
             pids=()
-            echo "$serviceGroup" | jq -c '.[]' | while read -r svc; do
+            for svc in "${services[@]}"; do
               (
-                name=$(echo "$svc" | jq -r '.name')
-                image=$(echo "$svc" | jq -r '.image')
-                ns=$(echo "$svc" | jq -r '.namespace')
-                flyway=$(echo "$svc" | jq -r '.flyway')
+              name=$(echo "$svc" | jq -r '.name')
+              image=$(echo "$svc" | jq -r '.image')
+              ns=$(echo "$svc" | jq -r '.namespace')
+              flyway=$(echo "$svc" | jq -r '.flyway')
 
-                echo "Triggering $name"
-                gh workflow run reusable_cd.yaml \
-                  -f service="$name" \
-                  -f image_tag="$image" \
-                  -f namespace="$ns" \
-                  -f flyway="$flyway"
+              echo "Triggering $name"
+              gh workflow run reusable_cd.yaml \
+                -f service="$name" \
+                -f image_tag="$image" \
+                -f namespace="$ns" \
+                -f flyway="$flyway"
 
-                sleep 5
+              sleep 5
 
-                run_id=$(gh run list --workflow=reusable_cd.yaml --limit=1 --json databaseId -q '.[0].databaseId')
-                echo "Run ID for $name: $run_id"
-                echo "$run_id" >> "$run_ids_file"
+              run_id=$(gh run list --workflow=reusable_cd.yaml --limit=1 --json databaseId -q '.[0].databaseId')
+              echo "Run ID for $name: $run_id"
+              echo "$run_id" >> "$run_ids_file"
               ) &
               pids+=($!)
             done
@@ -75,22 +77,22 @@ jobs:
             watch_pids=()
             while read -r id; do
               (
-                while true; do
-                  status=$(gh run view "$id" --json status -q '.status')
-                  conclusion=$(gh run view "$id" --json conclusion -q '.conclusion')
-                  echo "Workflow $id status: $status / $conclusion"
+              while true; do
+                status=$(gh run view "$id" --json status -q '.status')
+                conclusion=$(gh run view "$id" --json conclusion -q '.conclusion')
+                echo "Workflow $id status: $status / $conclusion"
 
-                  if [[ "$status" == "completed" ]]; then
-                    if [[ "$conclusion" == "success" ]]; then
-                      echo "✅ Run $id succeeded"
-                      break
-                    else
-                      echo "❌ Run $id failed or cancelled"
-                      exit 1
-                    fi
-                  fi
-                  sleep 10
-                done
+                if [[ "$status" == "completed" ]]; then
+                if [[ "$conclusion" == "success" ]]; then
+                  echo "✅ Run $id succeeded"
+                  break
+                else
+                  echo "❌ Run $id failed or cancelled"
+                  exit 1
+                fi
+                fi
+                sleep 10
+              done
               ) &
               watch_pids+=($!)
             done < "$run_ids_file"
@@ -103,4 +105,4 @@ jobs:
             rm -f "$run_ids_file"
             echo "✅ Group $i complete"
             ((i+=1))
-          done
+            done
