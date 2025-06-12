@@ -54,6 +54,7 @@ jobs:
 
               echo "Triggering $name in namespace $ns with image $image and flyway=$flyway"
               unique_id=$(date +%s%N)  # nanosecond timestamp
+              trigger_id="$unique_id"
               (
                 # Trigger workflow and capture the run id directly from the output
                 run_output=$(gh workflow run reusable_cd.yaml \
@@ -61,7 +62,7 @@ jobs:
                   -f image_tag="$image" \
                   -f namespace="$ns" \
                   -f flyway="$flyway" \
-                  -f trigger_id="$unique_id" \
+                  -f trigger_id="$trigger_id" \
                   --json id 2>/dev/null)
 
                 new_run_id=$(echo "$run_output" | jq -r '.id // empty')
