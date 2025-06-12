@@ -1,5 +1,5 @@
-name: CD - Deploy ${{ inputs.service }} to GKE
-
+name: CD - Deploy service to GKE
+run-name: Deploy ${{ inputs.service }} to GKE
 on:
   workflow_dispatch:
     inputs: 
