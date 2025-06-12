@@ -52,8 +52,8 @@ jobs:
                 -f namespace="$ns" \
                 -f flyway="$flyway" 
       
-              # Sleep a second to avoid same-timestamp runs (gh bug sometimes)
-              sleep 1
+              # Sleep 5 seconds to avoid same-timestamp runs (gh bug sometimes)
+              sleep 5
       
               # Get the latest run ID (safe because they're unique now)
               run_id=$(gh run list --workflow=consolidated_deployment.yaml --limit=1 --json databaseId -q '.[0].databaseId')
