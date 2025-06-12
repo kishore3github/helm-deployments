@@ -53,25 +53,27 @@ jobs:
                   flyway=$(echo "$svc" | jq -r '.flyway')
 
                   echo "Triggering $name in namespace $ns with image $image and flyway=$flyway"
-                  # Get list of current run IDs before triggering
-                  before_ids=$(gh run list --workflow=reusable_cd.yaml --json databaseId -q '.[].databaseId')
-
-                  gh workflow run reusable_cd.yaml \
+                  # Trigger workflow and capture the run id directly from the output
+                  run_output=$(gh workflow run reusable_cd.yaml \
                     -f service="$name" \
                     -f image_tag="$image" \
                     -f namespace="$ns" \
-                    -f flyway="$flyway"
+                    -f flyway="$flyway" \
+                    --json id 2>/dev/null)
 
-                  # Wait for a new run to appear
-                  new_run_id=""
-                  for attempt in {1..12}; do
-                    sleep 5
-                    after_ids=$(gh run list --workflow=reusable_cd.yaml --json databaseId -q '.[].databaseId')
-                    new_run_id=$(comm -13 <(echo "$before_ids" | sort) <(echo "$after_ids" | sort) | tail -n1)
-                    if [[ -n "$new_run_id" ]]; then
-                      break
-                    fi
-                  done
+                  new_run_id=$(echo "$run_output" | jq -r '.id // empty')
+
+                  # Fallback: If direct capture fails, poll for the latest run for this workflow and inputs
+                  if [[ -z "$new_run_id" ]]; then
+                    for attempt in {1..12}; do
+                      sleep 5
+                      # Get the most recent run for this workflow and branch
+                      new_run_id=$(gh run list --workflow=reusable_cd.yaml --branch="$GITHUB_REF_NAME" --json databaseId,headBranch,headSha -q '.[0].databaseId')
+                      if [[ -n "$new_run_id" ]]; then
+                        break
+                      fi
+                    done
+                  fi
 
                   if [[ -z "$new_run_id" ]]; then
                     echo "❌ Failed to get new run ID for $name"
