@@ -46,7 +46,7 @@ jobs:
               flyway=$(echo "$svc" | jq -r '.flyway')
       
               echo "Triggering $name"
-              gh workflow run consolidated-deployment.yaml \
+              gh workflow run consolidated_deployment.yaml \
                 -f service="$name" \
                 -f image_tag="$image" \
                 -f namespace="$ns" \
@@ -56,7 +56,7 @@ jobs:
               sleep 1
       
               # Get the latest run ID (safe because they're unique now)
-              run_id=$(gh run list --workflow=consolidated-deployment.yaml --limit=1 --json databaseId -q '.[0].databaseId')
+              run_id=$(gh run list --workflow=consolidated_deployment.yaml --limit=1 --json databaseId -q '.[0].databaseId')
               echo "Run ID for $name: $run_id"
               run_ids+=($run_id)
             done
