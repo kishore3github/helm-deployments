@@ -150,5 +150,4 @@ jobs:
 
             echo "✅ Group $i complete!"
             rm -f "$group_file"
-            done
           done
