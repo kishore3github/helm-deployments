@@ -60,7 +60,7 @@ Deployments:
       namespace: sit
       flyway: false
     - name: my-service
-      image: v2
+      image: v1
       namespace: staging
       flyway: false
   

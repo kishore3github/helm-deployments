@@ -113,7 +113,7 @@ jobs:
                 wait "$pid"
               done
 
-              echo "⏱ Waiting for all runs in Group $j ($group_name) to finish..."
+              echo "⏱ Waiting for all runs in Group $group_name to finish..."
               wait_pids=()
               while read -r run_id; do
                 (
@@ -142,7 +142,7 @@ jobs:
                 wait "$pid"
               done
 
-            echo "✅ Group $j ($group_name) complete!"
+            echo "✅ Group $group_name complete!"
             rm -f "$group_file"
           done
 
