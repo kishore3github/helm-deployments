@@ -73,6 +73,7 @@ jobs:
                   before_ids=$(gh run list --workflow=$workflow_name --json databaseId -q '.[].databaseId')
 
                   gh workflow run $workflow_name \
+                    --repo "${GITHUB_REPOSITORY:-$GITHUB_REPO}" \
                     -f service="$name" \
                     -f image_tag="$image" \
                     -f namespace="$ns" \
