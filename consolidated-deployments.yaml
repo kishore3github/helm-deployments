@@ -15,7 +15,7 @@ Deployments:
       namespace: development
       flyway: true
     - name: my-service
-      image: v2
+      image: v3
       namespace: staging
       flyway: true
  
