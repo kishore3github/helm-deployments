@@ -36,9 +36,9 @@ jobs:
             exit 1
           fi
             i=0
-            groups_count=$(yq '.deployments | length' consolidated-deployments.yaml)
+            groups_count=$(yq '.Deployments | length' consolidated-deployments.yaml)
             for ((i=0; i<groups_count; i++)); do
-            decoded_group=$(yq -o=json ".deployments[$i]" consolidated-deployments.yaml)
+            decoded_group=$(yq -o=json ".Deployments[$i]" consolidated-deployments.yaml)
 
             # Validate that decoded_group is a non-empty JSON array
             if ! echo "$decoded_group" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
