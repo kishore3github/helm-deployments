@@ -9,7 +9,7 @@ on:
 
  
 jobs:
-  read-services:
+  deploy-services:
     runs-on: ubuntu-latest
  
     env:
