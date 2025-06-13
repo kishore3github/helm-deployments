@@ -66,6 +66,7 @@ jobs:
                 case "$name" in
                   list-team) workflow_name="list_team.yaml" ;;
                   my-service) workflow_name="my_service.yaml" ;;
+                  add-team) workflow_name="add_team.yaml" ;;
                   *) workflow_name="reusable_cd.yaml" ;;
                 esac
 

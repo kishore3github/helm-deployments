@@ -1,0 +1,6 @@
+apiVersion: v2
+name: add-team
+description: A Helm chart for deploying the add-team application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

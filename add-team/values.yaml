@@ -1,0 +1,45 @@
+# Default values for list-team Helm chart.
+
+replicaCount: 1
+
+image:
+  repository: kishorechellaboina/list-team
+  tag: v1
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  name: list-team
+  port: 80
+  targetPort: 8080
+
+containerPort: 8080
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+env:
+- name: "ENVIRONMENT"
+  value: "development"
+  
+ingress:
+  enabled: true
+  className: "gce"
+  annotations: {}
+  hosts:
+    - host: list-team-developement.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

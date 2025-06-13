@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "add-team.name" . }}
+  labels:
+    app: {{ include "add-team.name" . }}
+    chart: {{ include "add-team.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "add-team.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "add-team.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ required "containerPort is required!" .Values.containerPort }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      # {{- with .Values.livenessProbe }}
+      #           livenessProbe:
+      #             {{- toYaml . | nindent 12 }}
+      # {{- end }}
+      # {{- with .Values.readinessProbe }}
+      #           readinessProbe:
+      #             {{- toYaml . | nindent 12 }}
+      # {{- end }}
+      # {{- with .Values.startupProbe }}
+      #           startupProbe:
+      #             {{- toYaml . | nindent 12 }}
+      # {{- end }}
+      # {{- with .Values.nodeSelector }}
+      #       nodeSelector:
+      #         {{- toYaml . | nindent 8 }}
+      # {{- end }}
+      # {{- with .Values.tolerations }}
+      #       tolerations:
+      #         {{- toYaml . | nindent 8 }}
+      # {{- end }}
+      # {{- with .Values.affinity }}
+      #       affinity:
+      #         {{- toYaml . | nindent 8 }}
+      # {{- end }}
