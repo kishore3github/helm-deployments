@@ -49,11 +49,19 @@ jobs:
           i=0
           for serviceGroup in $(yq -o=json '.groups[]' consolidated-deployments.yaml | jq -c '.' | base64); do
 
+            decoded_group=$(echo "$serviceGroup" | base64 --decode)
+            # Skip empty groups
+            if [[ "$decoded_group" == "[]" || -z "$decoded_group" ]]; then
+              echo "⚠️ Skipping empty group $i"
+              ((i+=1))
+              continue
+            fi
+
             echo "🚀 Deploying Group $i (in parallel):"
  
             group_file="run_ids_$i.txt"
             > "$group_file"
-            mapfile -t services < <(echo "$serviceGroup" | base64 --decode | jq -c '.[]')
+            mapfile -t services < <(echo "$decoded_group" | jq -c '.[]')
  
             pids=()
             for svc in "${services[@]}"; do
