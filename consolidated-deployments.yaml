@@ -57,7 +57,7 @@ Deployments:
       flyway: false
     - name: my-service
       image: v3
-      namespace: development
+      namespace: sit
       flyway: false
     - name: my-service
       image: v2
