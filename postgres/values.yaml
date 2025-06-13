@@ -3,7 +3,7 @@
 replicaCount: 1
 
 image:
-  repository: kishorechellaboina/postgres
+  repository: kishorechellaboina/list-team
   tag: v1
   pullPolicy: IfNotPresent
 
@@ -17,26 +17,16 @@ containerPort: 8080
 
 resources:
   limits:
-    cpu: 200m
+    cpu: 150m
     memory: 256Mi
   requests:
-    cpu: 100m
+    cpu: 10m
     memory: 128Mi
 
 env:
 - name: "ENVIRONMENT"
   value: "development"
   
-ingress:
-  enabled: true
-  className: "gce"
-  annotations: {}
-  hosts:
-    - host: postgres-developement.com
-      paths:
-        - path: /
-          pathType: Prefix
-  tls: []
 
 nodeSelector: {}
 

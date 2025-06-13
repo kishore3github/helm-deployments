@@ -19,9 +19,6 @@
 {{- include "postgres.fullname" . }}-service
 {{- end -}}
 
-{{- define "postgres.ingressName" -}}
-{{- include "postgres.fullname" . }}-ingress
-{{- end -}}
 
 {{- define "postgres.labels" -}}
 app.kubernetes.io/name: {{ include "postgres.fullname" . }}
