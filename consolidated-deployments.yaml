@@ -4,7 +4,7 @@ groups:
       image: v3
       namespace: development
       flyway: false
-    - name: list-team
+    - name: my-service
       image: v2
       namespace: staging
       flyway: false
@@ -14,7 +14,7 @@ groups:
       image: v3
       namespace: development
       flyway: true
-    - name: my-service
+    - name: list-team
       image: v2
       namespace: staging
       flyway: true
