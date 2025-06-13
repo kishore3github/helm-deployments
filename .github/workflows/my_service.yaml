@@ -1,5 +1,5 @@
-name: CD - Deploy service to GKE
-run-name: Deploy ${{ inputs.service }} to ${{ inputs.namespace }} with ${{ inputs.image_tag }}
+name: Deployment Workflow for list-team
+run-name: Deploy ${{ inputs.service }} to ${{ inputs.namespace }} with version ${{ inputs.image_tag }}
 on:
   workflow_dispatch:
     inputs: 

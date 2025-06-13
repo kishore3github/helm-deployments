@@ -38,106 +38,109 @@ jobs:
             i=0
             groups_count=$(yq '.Deployments | length' consolidated-deployments.yaml)
             for ((i=0; i<groups_count; i++)); do
-            decoded_group=$(yq -o=json ".Deployments[$i]" consolidated-deployments.yaml)
+              # Get the group name (the key of the object at Deployments[$i])
+              group_name=$(yq -r ".Deployments[$i] | keys | .[0]" consolidated-deployments.yaml)
+              decoded_group=$(yq -o=json ".Deployments[$i].${group_name}" consolidated-deployments.yaml)
 
-            # Validate that decoded_group is a non-empty JSON array
-            if ! echo "$decoded_group" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
-              echo "⚠️ Skipping invalid or empty group $i"
-              continue
-            fi
-            j=$((i + 1))
-            echo "🚀 Deploying Group $j (in parallel):"
-
-            group_file="run_ids_$i.txt"
-            > "$group_file"
-            mapfile -t services < <(echo "$decoded_group" | jq -c '.[]')
-
-            cat "$group_file"
-
-            pids=()
-            for svc in "${services[@]}"; do
-              (
-              name=$(echo "$svc" | jq -r '.name')
-              image=$(echo "$svc" | jq -r '.image')
-              ns=$(echo "$svc" | jq -r '.namespace')
-              flyway=$(echo "$svc" | jq -r '.flyway')
-
-              case "$name" in
-                list-team) workflow_name="list_team.yaml" ;;
-                my-service) workflow_name="my_service.yaml" ;;
-                *) workflow_name="reusable_cd.yaml" ;;
-              esac
-
-              echo "🛠 Triggering $name with image $image in $ns (workflow: $workflow_name)"
-
-              if [[ "$DRY_RUN" == "true" ]]; then
-                echo "🔍 Dry run: would trigger $workflow_name for $name"
-                exit 0
+              # Validate that decoded_group is a non-empty JSON array
+              if ! echo "$decoded_group" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
+                echo "⚠️ Skipping invalid or empty group $i"
+                continue
               fi
+              j=$((i + 1))
+              echo "🚀 Deploying Group $j ($group_name) (in parallel):"
 
-              gh workflow run "$workflow_name" \
-                --repo "$GITHUB_REPO" \
-                -f service="$name" \
-                -f image_tag="$image" \
-                -f namespace="$ns" \
-                -f flyway="$flyway"
+              group_file="run_ids_$i.txt"
+              > "$group_file"
+              mapfile -t services < <(echo "$decoded_group" | jq -c '.[]')
 
-              echo "⏳ Waiting for run ID for $name..."
-              run_id=""
-              for attempt in {1..10}; do
-                sleep 5
-                run_id=$(gh run list --workflow="$workflow_name" --json databaseId,headSha -q \
-                ".[] | select(.headSha == \"${GITHUB_SHA}\") | .databaseId" | head -n1)
-                if [[ -n "$run_id" ]]; then
-                echo "✅ Run ID for $name: $run_id"
-                echo "$run_id" >> "$group_file"
-                break
+              cat "$group_file"
+
+              pids=()
+              for svc in "${services[@]}"; do
+                (
+                name=$(echo "$svc" | jq -r '.name')
+                image=$(echo "$svc" | jq -r '.image')
+                ns=$(echo "$svc" | jq -r '.namespace')
+                flyway=$(echo "$svc" | jq -r '.flyway')
+
+                case "$name" in
+                  list-team) workflow_name="list_team.yaml" ;;
+                  my-service) workflow_name="my_service.yaml" ;;
+                  *) workflow_name="reusable_cd.yaml" ;;
+                esac
+
+                echo "🛠 Triggering $name with image $image in $ns (workflow: $workflow_name)"
+
+                if [[ "$DRY_RUN" == "true" ]]; then
+                  echo "🔍 Dry run: would trigger $workflow_name for $name"
+                  exit 0
                 fi
-              done
 
-              if [[ -z "$run_id" ]]; then
-                echo "❌ Failed to get run ID for $name"
-                exit 1
-              fi
-              ) &
-              pids+=($!)
-              echo "sleep for 15 seconds to avoid rate limiting..."
-              sleep 15
-              
-            done
+                gh workflow run "$workflow_name" \
+                  --repo "$GITHUB_REPO" \
+                  -f service="$name" \
+                  -f image_tag="$image" \
+                  -f namespace="$ns" \
+                  -f flyway="$flyway"
 
-            for pid in "${pids[@]}"; do
-              wait "$pid"
-            done
-
-            echo "⏱ Waiting for all runs in Group $j to finish..."
-            wait_pids=()
-            while read -r run_id; do
-              (
-              while true; do
-                status=$(gh run view "$run_id" --json status -q '.status')
-                conclusion=$(gh run view "$run_id" --json conclusion -q '.conclusion')
-                echo "⏸ Run $run_id: $status ($conclusion)"
-
-                if [[ "$status" == "completed" ]]; then
-                if [[ "$conclusion" == "success" ]]; then
-                  echo "✅ Run $run_id completed successfully."
+                echo "⏳ Waiting for run ID for $name..."
+                run_id=""
+                for attempt in {1..10}; do
+                  sleep 5
+                  run_id=$(gh run list --workflow="$workflow_name" --json databaseId,headSha -q \
+                  ".[] | select(.headSha == \"${GITHUB_SHA}\") | .databaseId" | head -n1)
+                  if [[ -n "$run_id" ]]; then
+                  echo "✅ Run ID for $name: $run_id"
+                  echo "$run_id" >> "$group_file"
                   break
-                else
-                  echo "❌ Run $run_id failed or was cancelled."
+                  fi
+                done
+
+                if [[ -z "$run_id" ]]; then
+                  echo "❌ Failed to get run ID for $name"
                   exit 1
                 fi
-                fi
-                sleep 10
+                ) &
+                pids+=($!)
+                echo "sleep for 15 seconds to avoid rate limiting..."
+                sleep 15
+                
               done
-              ) &
-              wait_pids+=($!)
-            done < "$group_file"
 
-            for pid in "${wait_pids[@]}"; do
-              wait "$pid"
+              for pid in "${pids[@]}"; do
+                wait "$pid"
+              done
+
+              echo "⏱ Waiting for all runs in Group $j ($group_name) to finish..."
+              wait_pids=()
+              while read -r run_id; do
+                (
+                while true; do
+                  status=$(gh run view "$run_id" --json status -q '.status')
+                  conclusion=$(gh run view "$run_id" --json conclusion -q '.conclusion')
+                  echo "⏸ Run $run_id: $status ($conclusion)"
+
+                  if [[ "$status" == "completed" ]]; then
+                  if [[ "$conclusion" == "success" ]]; then
+                    echo "✅ Run $run_id completed successfully."
+                    break
+                  else
+                    echo "❌ Run $run_id failed or was cancelled."
+                    exit 1
+                  fi
+                  fi
+                  sleep 10
+                done
+                ) &
+                wait_pids+=($!)
+              done < "$group_file"
+
+              for pid in "${wait_pids[@]}"; do
+                wait "$pid"
+              done
+
+              echo "✅ Group $j ($group_name) complete!"
+              rm -f "$group_file"
             done
-
-            echo "✅ Group $j complete!"
-            rm -f "$group_file"
           done

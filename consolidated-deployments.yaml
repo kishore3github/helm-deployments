@@ -1,5 +1,5 @@
 Deployments:
-  -
+  - Group1:
     - name: list-team
       image: v3
       namespace: development
@@ -9,7 +9,7 @@ Deployments:
       namespace: staging
       flyway: false
   
-  -
+  - Group-2:
     - name: my-service
       image: v3
       namespace: development
@@ -19,7 +19,7 @@ Deployments:
       namespace: staging
       flyway: true
  
-  -
+  - Group-3:
     - name: my-service
       image: v1
       namespace: slack-deployment
