@@ -31,6 +31,17 @@ jobs:
           sudo apt-get install -y jq
           sudo snap install yq
 
+      - name: Trigger test workflow
+        run: |
+          gh workflow run reusable_cd.yaml \
+            --repo "${{ github.repository }}" \
+            -f service="list-team" \
+            -f image_tag="example:latest" \
+            -f namespace="dev" \
+            -f flyway="false"
+        env:
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }
+
       - name: Read deployment.yaml and deploy sequentially
         env:
           GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
