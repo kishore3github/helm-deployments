@@ -1,5 +1,5 @@
 Deployments:
-  - Group1:
+  - databa:
     - name: list-team
       image: v3
       namespace: development
@@ -9,7 +9,7 @@ Deployments:
       namespace: staging
       flyway: false
   
-  - Group-2:
+  - backend:
     - name: my-service
       image: v3
       namespace: development
@@ -19,7 +19,11 @@ Deployments:
       namespace: staging
       flyway: true
  
-  - Group-3:
+  - frontend:
+    - name: my-service
+      image: v2
+      namespace: development
+      flyway: false
     - name: my-service
       image: v1
       namespace: slack-deployment

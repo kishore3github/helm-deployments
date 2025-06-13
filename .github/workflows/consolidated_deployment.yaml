@@ -47,8 +47,7 @@ jobs:
                 echo "⚠️ Skipping invalid or empty group $i"
                 continue
               fi
-              j=$((i + 1))
-              echo "🚀 Deploying Group $j ($group_name) (in parallel):"
+              echo "🚀 Deploying Group  ($group_name) (in parallel):"
 
               group_file="run_ids_$i.txt"
               > "$group_file"
@@ -70,7 +69,7 @@ jobs:
                   *) workflow_name="reusable_cd.yaml" ;;
                 esac
 
-                echo "🛠 Triggering $name with image $image in $ns (workflow: $workflow_name)"
+                echo "🛠 Triggering $name with image $image in $ns"    #(workflow: $workflow_name)
 
                 if [[ "$DRY_RUN" == "true" ]]; then
                   echo "🔍 Dry run: would trigger $workflow_name for $name"
@@ -103,8 +102,8 @@ jobs:
                 fi
                 ) &
                 pids+=($!)
-                echo "sleep for 15 seconds to avoid rate limiting..."
-                sleep 15
+                echo "sleep for 5 seconds to avoid rate limiting..."
+                sleep 5
                 
               done
 
