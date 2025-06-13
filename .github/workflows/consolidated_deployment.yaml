@@ -6,17 +6,7 @@ on:
       - main
     paths:
       - 'consolidated-deployments.yaml'
- 
-  workflow_dispatch:
-    inputs:
-      mode:
-        description: 'Mode of operation'
-        required: true
-        default: 'sequential'
-        type: choice
-        options:
-          - sequential
-          - parallel
+
  
 jobs:
   read-services:

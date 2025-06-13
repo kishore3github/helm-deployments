@@ -8,7 +8,14 @@ groups:
       image: v2
       namespace: staging
       flyway: false
- 
+    - name: list-team
+      image: v2
+      namespace: sit
+      flyway: false
+    - name: list-team
+      image: v1
+      namespace: slack-deployment
+      flyway: true
   -
     - name: my-service
       image: v3
@@ -18,8 +25,16 @@ groups:
       image: v2
       namespace: staging
       flyway: true
+    - name: my-service
+      image: v2
+      namespace: sit
+      flyway: true
  
   -
+    - name: my-service
+      image: v1
+      namespace: slack-deployment
+      flyway: true
     - name: my-service
       image: v1
       namespace: slack-deployment
