@@ -1,0 +1,15 @@
+
+env: 
+- name: "ENVIRONMENT"
+  value: "staging"
+
+ingress:
+  enabled: true
+  className: "gce"
+  annotations: {}
+  hosts:
+    - host: postgres-staging.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []

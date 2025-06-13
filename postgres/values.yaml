@@ -1,15 +1,15 @@
-# Default values for list-team Helm chart.
+# Default values for postgres Helm chart.
 
 replicaCount: 1
 
 image:
-  repository: kishorechellaboina/list-team
+  repository: kishorechellaboina/postgres
   tag: v1
   pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
-  name: list-team
+  name: postgres
   port: 80
   targetPort: 8080
 
@@ -32,7 +32,7 @@ ingress:
   className: "gce"
   annotations: {}
   hosts:
-    - host: add-team-developement.com
+    - host: postgres-developement.com
       paths:
         - path: /
           pathType: Prefix

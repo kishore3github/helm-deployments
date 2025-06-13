@@ -15,32 +15,52 @@
 #  Services in each group can be deployed in parallel, and groups can be processed sequentially.
 Deployments:
   - database:
-    - name: list-team
+    - name: postgres
       image: v3
       namespace: development
       flyway: false
-    - name: list-team
+    - name: postgres
       image: v2
       namespace: staging
+      flyway: false
+    - name: postgres
+      image: v1
+      namespace: sit
       flyway: false
   
   - backend:
-    - name: my-service
+    - name: add-team
       image: v1
       namespace: development
       flyway: true
-    - name: my-service
+    - name: add-team
       image: v3
       namespace: staging
       flyway: true
+    - name: add-team
+      image: v2
+      namespace: sit
+      flyway: true
+    - name: list-team
+      image: v3
+      namespace: development
+      flyway: false
+    - name: list-team
+      image: v2
+      namespace: staging
+      flyway: false
  
   - frontend:
     - name: my-service
-      image: v2
+      image: v1
       namespace: development
       flyway: false
     - name: my-service
-      image: v1
-      namespace: slack-deployment
+      image: v3
+      namespace: development
+      flyway: false
+    - name: my-service
+      image: v2
+      namespace: staging
       flyway: false
   
