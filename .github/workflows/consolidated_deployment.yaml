@@ -68,6 +68,7 @@ jobs:
                   else
                     export workflow_name="reusable_cd.yaml"
                   fi
+                  echo "Using workflow: $workflow_name for service $name"
                   echo "Triggering $name in namespace $ns with image $image and flyway=$flyway"
                   # Get list of current run IDs before triggering
                   before_ids=$(gh run list --workflow=$workflow_name --json databaseId -q '.[].databaseId')
