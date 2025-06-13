@@ -20,7 +20,7 @@ Deployments:
       namespace: development
       flyway: false
     - name: postgres
-      image: v3
+      image: v2
       namespace: staging
       flyway: false
     - name: postgres
