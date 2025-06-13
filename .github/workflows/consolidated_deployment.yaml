@@ -47,7 +47,8 @@ jobs:
           fi
  
           i=0
-          for serviceGroup in $(yq '.groups[] | @base64' consolidated-deployments.yaml); do
+          for serviceGroup in $(yq -o=json '.groups[]' consolidated-deployments.yaml | jq -c '.' | base64); do
+
             echo "🚀 Deploying Group $i (in parallel):"
  
             group_file="run_ids_$i.txt"
