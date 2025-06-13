@@ -104,8 +104,8 @@ jobs:
                 fi
                 ) &
                 pids+=($!)
-                echo "sleep for 10 seconds to avoid rate limiting..."
-                sleep 10
+                echo "sleep for 15 seconds to avoid rate limiting..."
+                sleep 15
                 
               done
 
