@@ -47,7 +47,7 @@ jobs:
                 echo "⚠️ Skipping invalid or empty group $i"
                 continue
               fi
-              echo "🚀 Deploying Group  ($group_name) (in parallel):"
+              echo "🚀 Deploying $group_name Group (in parallel):"
 
               group_file="run_ids_$i.txt"
               > "$group_file"
@@ -116,6 +116,7 @@ jobs:
               while read -r run_id; do
                 (
                 while true; do
+                  gh run watch "$run_id"
                   status=$(gh run view "$run_id" --json status -q '.status')
                   conclusion=$(gh run view "$run_id" --json conclusion -q '.conclusion')
                   echo "⏸ Run $run_id: $status ($conclusion)"
