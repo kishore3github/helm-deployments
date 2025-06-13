@@ -44,109 +44,69 @@ jobs:
             echo "Reading services from consolidated-deployments.yaml"
             i=0
 
-            # Ensure gh is authenticated
-            echo "${GH_TOKEN}" | gh auth login --with-token
-
-            yq -o=json '.deployments' consolidated-deployments.yaml | jq -c '.[]' | while read -r serviceGroup; do
+            # Example loop for groups (replace with your actual logic)
+            for serviceGroup in $(cat consolidated-deployments.yaml | yq '.groups[] | @base64'); do
               echo "=== Deploying group $i in parallel ==="
               run_ids_file="run_ids_$i.txt"
               > "$run_ids_file"
 
-              mapfile -t services < <(echo "$serviceGroup" | jq -c '.[]')
+              # Read all services in the group into an array
+              mapfile -t services < <(echo "$serviceGroup" | base64 --decode | jq -c '.[]')
 
               pids=()
               for svc in "${services[@]}"; do
-                name=$(echo "$svc" | jq -r '.name')
-                ns=$(echo "$svc" | jq -r '.namespace')
-                image=$(echo "$svc" | jq -r '.image')
-                flyway=$(echo "$svc" | jq -r '.flyway')
-
-                echo "Triggering $name in namespace $ns with image $image and flyway=$flyway"
-                unique_id=$(date +%s%N)
-                trigger_id="$unique_id"
-
                 (
-                  echo "Triggering workflow for $name with inputs:"
-                  echo "  Namespace: $ns"
-                  echo "  Image: $image"
-                  echo "  Flyway: $flyway"
-                  echo "  Trigger ID: $trigger_id"
+                  name=$(echo "$svc" | jq -r '.name')
+                  image=$(echo "$svc" | jq -r '.image')
+                  ns=$(echo "$svc" | jq -r '.namespace')
+                  flyway=$(echo "$svc" | jq -r '.flyway')
 
-                  if [[ "$DRY_RUN" == "true" ]]; then
-                    echo "🧪 Dry-run mode: Simulating workflow trigger for $name"
-                    simulated_run_id="dryrun-${name}-${ns}-${unique_id}"
-                    echo "$simulated_run_id" >> "$run_ids_file"
-                    exit 0
+                  if [[ $name == "list-team" ]]; then
+                    export workflow_name="reusable_cd.yaml"
+                  if [[ $name == "my-service" ]] then
+                    export workflow_name="reusable_cd_1.yaml"
+                  else
+                    export workflow_name="reusable_cd.yaml"
                   fi
+                  echo "Triggering $name in namespace $ns with image $image and flyway=$flyway"
+                  # Get list of current run IDs before triggering
+                  before_ids=$(gh run list --workflow=$workflow_name --json databaseId -q '.[].databaseId')
 
-                  echo "🔄 Running gh workflow for $name in $ns..."
-
-                  run_output=$(gh workflow run reusable_cd.yaml \
-                    --ref main \
+                  gh workflow run $workflow_name \
                     -f service="$name" \
                     -f image_tag="$image" \
                     -f namespace="$ns" \
-                    -f flyway="$flyway" \
-                    -f trigger_id="$trigger_id" \
-                    --json id 2>&1)
-                  exit_code=$?
+                    -f flyway="$flyway"
 
-                  echo "🔍 gh workflow run exit code: $exit_code"
-                  echo "📄 gh workflow run output:"
-                  echo "$run_output"
-
-                  if [[ $exit_code -ne 0 ]]; then
-                    echo "❌ gh workflow run failed for $name in $ns"
-                    exit 1
-                  fi
-
-
-
-                  echo "Run output: $run_output"
-                  new_run_id=$(echo "$run_output" | jq -r '.id // empty')
-
-                  if [[ -z "$new_run_id" ]]; then
-                    echo "⚠️ Direct run ID capture failed for $name. Polling for run ID..."
-                    for attempt in {1..12}; do
-                      sleep 5
-                      new_run_id=$(gh run list --workflow=reusable_cd.yaml --branch="${GITHUB_REF_NAME:-main}" --json databaseId,headBranch,headSha,createdAt,displayTitle \
-                        | jq -r --arg name "$name" --arg ns "$ns" --arg id "$trigger_id" '
-                          map(select(.displayTitle | test($name) and test($ns)))
-                          | sort_by(.createdAt)
-                          | reverse
-                          | .[0].databaseId // empty')
-
-                      if [[ -n "$new_run_id" ]]; then
-                        echo "✅ Found run ID via polling: $new_run_id"
-                        break
-                      fi
-                    done
-                  fi
+                  # Wait for a new run to appear
+                  new_run_id=""
+                  for attempt in {1..12}; do
+                    sleep 5
+                    after_ids=$(gh run list --workflow=$workflow_name --json databaseId -q '.[].databaseId')
+                    new_run_id=$(comm -13 <(echo "$before_ids" | sort) <(echo "$after_ids" | sort) | tail -n1)
+                    if [[ -n "$new_run_id" ]]; then
+                      break
+                    fi
+                  done
 
                   if [[ -z "$new_run_id" ]]; then
                     echo "❌ Failed to get new run ID for $name"
                     exit 1
                   fi
-
                   echo "Run ID for $name in $ns: $new_run_id"
                   echo "$new_run_id" >> "$run_ids_file"
                 ) &
                 pids+=($!)
               done
-
+              # Wait for all background triggers to finish
               for pid in "${pids[@]}"; do
                 wait "$pid"
               done
 
+              # Now watch all runs in parallel
               watch_pids=()
               while read -r id; do
                 (
-                  if [[ "$DRY_RUN" == "true" ]]; then
-                    echo "🧪 Dry-run mode: Simulating watch for $id"
-                    echo "✅ Simulated run $id succeeded"
-                    exit 0
-                  fi
-
                   while true; do
                     status=$(gh run view "$id" --json status -q '.status')
                     conclusion=$(gh run view "$id" --json conclusion -q '.conclusion')
@@ -167,10 +127,13 @@ jobs:
                 watch_pids+=($!)
               done < "$run_ids_file"
 
+              # Wait for all watches to finish
               for pid in "${watch_pids[@]}"; do
                 wait "$pid"
               done
+
               rm -f "$run_ids_file"
               echo "✅ Group $i complete"
               ((i+=1))
             done
+
