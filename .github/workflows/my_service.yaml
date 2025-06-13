@@ -1,4 +1,4 @@
-name: Deployment Workflow for my-service
+name: Deployment Pipeline for my-service
 run-name: Deploy ${{ inputs.service }} to ${{ inputs.namespace }} with version ${{ inputs.image_tag }}
 on:
   workflow_dispatch:

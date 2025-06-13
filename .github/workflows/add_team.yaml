@@ -1,4 +1,4 @@
-name: Deployment Workflow for add-team
+name: Deployment Pipeline for add-team
 run-name: Deploy ${{ inputs.service }} to ${{ inputs.namespace }} with version ${{ inputs.image_tag }}
 
 on:

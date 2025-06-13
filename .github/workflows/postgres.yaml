@@ -1,4 +1,4 @@
-name: Deployment Workflow for postgres
+name: Deployment Pipeline for postgres
 run-name: Deploy ${{ inputs.service }} to ${{ inputs.namespace }} with version ${{ inputs.image_tag }}
 
 on:
