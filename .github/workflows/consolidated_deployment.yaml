@@ -139,7 +139,6 @@ jobs:
                 wait "$pid"
               done
 
-              echo "✅ Group $j ($group_name) complete!"
-              rm -f "$group_file"
-            done
+            echo "✅ Group $j ($group_name) complete!"
+            rm -f "$group_file"
           done

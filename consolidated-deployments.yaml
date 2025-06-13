@@ -1,5 +1,20 @@
+#  consolidated-deployments.yaml
+#  This file consolidates deployment configurations for multiple services across different environments.
+#  It is used to trigger deployments in parallel using GitHub Actions workflows.
+#  Each service can have multiple versions and environments, and the file is structured to allow easy parsing and deployment.
+#  The file is expected to be read by a GitHub Actions workflow that triggers the appropriate deployment workflows.
+#  The file is structured as follows:
+#  - Deployments: A list of service groups, each containing multiple service configurations.
+#  - Each service configuration includes:
+#    - name: The name of the service.
+#    - image: The Docker image tag for the service.
+#    - namespace: The Kubernetes namespace where the service will be deployed.
+#    - flyway: A boolean indicating whether Flyway migrations should be run for this service.
+#  - The file is intended to be used in a CI/CD pipeline to automate deployments across multiple environments.
+#  - The file supports dry runs to validate configurations without triggering actual deployments.
+#  Services in each group can be deployed in parallel, and groups can be processed sequentially.
 Deployments:
-  - databa:
+  - database:
     - name: list-team
       image: v3
       namespace: development
