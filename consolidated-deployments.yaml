@@ -42,5 +42,5 @@ Deployments:
     - name: my-service
       image: v1
       namespace: slack-deployment
-      flyway: true
+      flyway: false
   

@@ -102,8 +102,8 @@ jobs:
                 fi
                 ) &
                 pids+=($!)
-                echo "sleep for 5 seconds to avoid rate limiting..."
-                sleep 5
+                echo "sleep for 10 seconds to avoid rate limiting..."
+                sleep 10
                 
               done
 
@@ -116,7 +116,7 @@ jobs:
               while read -r run_id; do
                 (
                 while true; do
-                  gh run watch "$run_id"
+                  # gh run watch "$run_id"
                   status=$(gh run view "$run_id" --json status -q '.status')
                   conclusion=$(gh run view "$run_id" --json conclusion -q '.conclusion')
                   echo "⏸ Run $run_id: $status ($conclusion)"
