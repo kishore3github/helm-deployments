@@ -1,4 +1,4 @@
-name: Sequential or Parallel Deployments
+name: Optimised Deployment Pipeline
 
 on:
   push:

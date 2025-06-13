@@ -1,4 +1,4 @@
-name: Consolidated Deployment Workflow
+name: Consolidated Optimised Deployment Pipeline
  
 on:
   push:

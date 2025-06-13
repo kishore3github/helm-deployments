@@ -1,5 +1,6 @@
 name: CD - Deploy service to GKE
-run-name: Deploy ${{ inputs.service }} to ${{ inputs.namespace }} with ${{ inputs.image_tag }} GKE
+run-name: Deploy ${{ inputs.service }} to ${{ inputs.namespace }} with ${{ inputs.image_tag }}
+
 on:
   workflow_dispatch:
     inputs: 
@@ -27,40 +28,40 @@ on:
         required: false
         type: string
         default: ''
-  # workflow_call:
-  #   inputs:
-  #     service:
-  #       description: 'Name of the service to deploy'
-  #       required: true
-  #       type: string
-  #       default: java
-  #     namespace:
-  #       description: 'Kubernetes namespace for deployment'
-  #       required: true
-  #       type: string
-  #       default: 17
-  #     image_tag:
-  #       description: 'Docker image tag to deploy'
-  #       required: true
-  #       type: string
-  #       default: adopt
-  #     flyway:
-  #       description: 'Whether to run Flyway migrations'
-  #       required: true
-  #       type: boolean
-  #       default: false
-  #     trigger_id:
-  #       description: 'Unique identifier for the trigger, used to track deployments'
-  #       required: false
-  #       type: string
-  #       default: ''
-  #   secrets:
-  #     GCP_SA_KEY:
-  #       description: 'Google Cloud Service Account Key'
-  #       required: true
-  #     PERSONAL_ACCESS_TOKEN:
-  #       description: 'GitHub Personal Access Token for triggering workflows'
-  #       required: true
+  workflow_call:
+    inputs:
+      service:
+        description: 'Name of the service to deploy'
+        required: true
+        type: string
+        default: java
+      namespace:
+        description: 'Kubernetes namespace for deployment'
+        required: true
+        type: string
+        default: 17
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: true
+        type: string
+        default: adopt
+      flyway:
+        description: 'Whether to run Flyway migrations'
+        required: true
+        type: boolean
+        default: false
+      trigger_id:
+        description: 'Unique identifier for the trigger, used to track deployments'
+        required: false
+        type: string
+        default: ''
+    secrets:
+      GCP_SA_KEY:
+        description: 'Google Cloud Service Account Key'
+        required: true
+      PERSONAL_ACCESS_TOKEN:
+        description: 'GitHub Personal Access Token for triggering workflows'
+        required: true
 
 env:
   PROJECT_ID: perceptive-day-462306-t3
