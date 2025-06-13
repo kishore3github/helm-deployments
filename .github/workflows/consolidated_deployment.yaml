@@ -40,7 +40,7 @@ jobs:
             -f namespace="dev" \
             -f flyway="false"
         env:
-          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Read deployment.yaml and deploy sequentially
         env:
