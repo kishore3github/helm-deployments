@@ -1,5 +1,5 @@
 name: Deployment Pipeline for list-team
-run-name: Deploy ${{ inputs.service }} to ${{ inputs.namespace }} with version ${{ inputs.image_tag }}
+run-name: Deploy ${{ inputs.service }} into ${{ inputs.namespace }} with version ${{ inputs.image_tag }}
 
 on:
   workflow_dispatch:

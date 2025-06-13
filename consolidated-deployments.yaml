@@ -34,7 +34,7 @@ Deployments:
       namespace: development
       flyway: true
     - name: add-team
-      image: v3
+      image: v2
       namespace: staging
       flyway: true
     - name: add-team

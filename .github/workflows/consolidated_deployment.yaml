@@ -145,3 +145,9 @@ jobs:
             echo "✅ Group $j ($group_name) complete!"
             rm -f "$group_file"
           done
+
+      - name: post scripts
+        run: |
+          echo "All deployments completed successfully!"
+          echo "You can check the status of the runs in the GitHub Actions tab."
+          echo "Thank you for using our deployment pipeline!"
