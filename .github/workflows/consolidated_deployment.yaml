@@ -63,7 +63,7 @@ jobs:
 
                   if [[ $name == "list-team" ]]; then
                     export workflow_name="reusable_cd.yaml"
-                  if [[ $name == "my-service" ]] then
+                  elif [[ $name == "my-service" ]]; then
                     export workflow_name="reusable_cd_1.yaml"
                   else
                     export workflow_name="reusable_cd.yaml"
