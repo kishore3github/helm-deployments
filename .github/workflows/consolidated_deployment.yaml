@@ -47,12 +47,12 @@ jobs:
           fi
  
           i=0
-          for serviceGroup in $(yq -o=json '.groups[]' consolidated-deployments.yaml | jq -c '.' | base64); do
+          for serviceGroup in $(yq -o=json '.groups[]' consolidated-deployments.yaml | base64); do
 
             decoded_group=$(echo "$serviceGroup" | base64 --decode)
-            # Skip empty groups
-            if [[ "$decoded_group" == "[]" || -z "$decoded_group" ]]; then
-              echo "⚠️ Skipping empty group $i"
+            # Validate that decoded_group is a non-empty JSON array
+            if ! echo "$decoded_group" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
+              echo "⚠️ Skipping invalid or empty group $i"
               ((i+=1))
               continue
             fi
