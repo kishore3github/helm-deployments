@@ -28,7 +28,7 @@ jobs:
           sudo apt-get install -y jq
           sudo snap install yq
  
-      - name: Deploy Services (Sequential Groups, Parallel Within Each)
+      - name: Deploy Services
         run: |
           echo "📦 Reading consolidated-deployments.yaml..."
           if [[ ! -f consolidated-deployments.yaml ]]; then
@@ -36,17 +36,17 @@ jobs:
             exit 1
           fi
             i=0
-            groups_count=$(yq '.groups | length' consolidated-deployments.yaml)
+            groups_count=$(yq '.deployments | length' consolidated-deployments.yaml)
             for ((i=0; i<groups_count; i++)); do
-            decoded_group=$(yq -o=json ".groups[$i]" consolidated-deployments.yaml)
+            decoded_group=$(yq -o=json ".deployments[$i]" consolidated-deployments.yaml)
 
             # Validate that decoded_group is a non-empty JSON array
             if ! echo "$decoded_group" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
               echo "⚠️ Skipping invalid or empty group $i"
               continue
             fi
-
-            echo "🚀 Deploying Group $i (in parallel):"
+            j=$((i + 1))
+            echo "🚀 Deploying Group $j (in parallel):"
 
             group_file="run_ids_$i.txt"
             > "$group_file"
@@ -63,8 +63,8 @@ jobs:
               flyway=$(echo "$svc" | jq -r '.flyway')
 
               case "$name" in
-                list-team) workflow_name="reusable_cd.yaml" ;;
-                my-service) workflow_name="reusable_cd_1.yaml" ;;
+                list-team) workflow_name="list_team.yaml" ;;
+                my-service) workflow_name="my_service.yaml" ;;
                 *) workflow_name="reusable_cd.yaml" ;;
               esac
 
@@ -110,7 +110,7 @@ jobs:
               wait "$pid"
             done
 
-            echo "⏱ Waiting for all runs in Group $i to finish..."
+            echo "⏱ Waiting for all runs in Group $j to finish..."
             wait_pids=()
             while read -r run_id; do
               (
@@ -138,6 +138,6 @@ jobs:
               wait "$pid"
             done
 
-            echo "✅ Group $i complete!"
+            echo "✅ Group $j complete!"
             rm -f "$group_file"
           done
