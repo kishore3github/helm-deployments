@@ -31,14 +31,14 @@ jobs:
           sudo apt-get install -y jq
           sudo snap install yq
 
-      - name: Trigger test workflow
-        run: |
-          gh workflow run reusable_cd.yaml \
-            --repo "${{ github.repository }}" \
-            -f service="list-team" \
-            -f image_tag="example:latest" \
-            -f namespace="dev" \
-            -f flyway="false"
+      # - name: Trigger test workflow
+      #   run: |
+      #     gh workflow run reusable_cd.yaml \
+      #       --repo "${{ github.repository }}" \
+      #       -f service="list-team" \
+      #       -f image_tag="example:latest" \
+      #       -f namespace="dev" \
+      #       -f flyway="false"
         env:
           GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
@@ -71,6 +71,11 @@ jobs:
                   image=$(echo "$svc" | jq -r '.image')
                   ns=$(echo "$svc" | jq -r '.namespace')
                   flyway=$(echo "$svc" | jq -r '.flyway')
+
+                  if [[ -z $name || -z $image || -z $ns ]]; then
+                    echo "❌ Missing required fields in service definition: $svc"
+                    exit 1
+                  fi
 
                   if [[ $name == "list-team" ]]; then
                     export workflow_name="reusable_cd.yaml"
