@@ -24,13 +24,13 @@ Deployments:
       namespace: staging
       flyway: false
     - name: postgres
-      image: v1
+      image: v2
       namespace: sit
       flyway: false
   
   - backend:
     - name: add-team
-      image: v1
+      image: v2
       namespace: development
       flyway: true
     - name: add-team
