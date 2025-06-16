@@ -16,11 +16,11 @@
 Deployments:
   - database:
     - name: postgres
-      image: v3
+      image: v2
       namespace: development
       flyway: false
     - name: postgres
-      image: v2
+      image: v1
       namespace: staging
       flyway: false
     - name: postgres
@@ -34,7 +34,7 @@ Deployments:
       namespace: development
       flyway: true
     - name: add-team
-      image: v2
+      image: v1
       namespace: staging
       flyway: true
     - name: add-team
